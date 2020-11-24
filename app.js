@@ -22,6 +22,10 @@ app.get('/login', function(req, res){
 
 app.get('/signup', function(req, res){
     res.render('signup');
+});
+
+app.get('/dashboard', function(req, res){
+    res.render('dashboard');
 })
 
 app.listen(3000, function(){
