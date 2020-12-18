@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar-dash') %> 
+<script type="text/javascript" src="../assets/js/dropzone.js"></script>
+
+
+<div class="container">
+   
+    
+    <form action="/user" method="post" enctype="multipart/form-data" >
+        <div class="user-header">
+            <h2 class="h1-user">User Settings</h2>
+            <button class="btn-header btn btn-primary rounded-pill pl-8 pr-8">Save</button>
+        </div>
+        <div class="card mb-4 shadow-sm user-card mt-6">
+        <div class="form-group">
+          <label for="exampleFormControlInput1">Email address</label>
+          <input type="email" class="form-control" disabled id="exampleFormControlInput1" value=<%= user.email %>  height="100">
+        </div>
+       
+        <div class="form-group">
+          <label for="exampleFormControlTextarea1">Bio (Tell your students about yourself)</label>
+          <textarea class="form-control" id="exampleFormControlTextarea1" name="bio" rows="3"  required><%= user.bio ? user.bio : "" %> </textarea>
+        </div>
+        <p>Your Profile Image</p>
+        <div class="form-group file-input">
+          <div>
+
+                  <img
+                  id="userImageOutput"
+                  class="bio-image"
+                    src="https://breakthrough.org/wp-content/uploads/2018/10/default-placeholder-image.png"
+                    alt="">
+          </div>
+
+          <input id="userImageInput" type="file" name="profile-image" accept="image/*">
+        </div>
+
+        
+      </form>
+    </div>
+</div>
+
+<%- include('partials/footer') %> 

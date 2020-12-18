@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark text-color">
   <div class="container">
-    <a class="navbar-brand" href="/">
+    <a class="navbar-brand" href= <%= typeof user != undefined ? "/dashboard" :  "/" %> >
       <h1 style="font-family: cursive">Akilli</h1>
     </a>
     <button
@@ -26,9 +26,11 @@
         </li>
       </ul>
       <div class="ml-auto my-2 my-lg-0">
+        <a href="/class">
         <button class="btn btn-outline-light rounded-pill text-uppercase">
-          Create Class
-        </button>
+            Create Class
+          </button>
+        </a>
       </div>
     </div>
   </div>

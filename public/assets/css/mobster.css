@@ -53,6 +53,7 @@ h6,
 .h5,
 .h6 {
   line-height: 1.25;
+  font-family: 'Roboto', sans-serif;
 }
 
 h1,
@@ -2224,6 +2225,8 @@ hr {
   padding-top: 100px;
   padding-bottom: 100px;
 }
+
+
 
 .page-section:not(.fg-white) h1,
 .page-section:not(.fg-white) h2,
