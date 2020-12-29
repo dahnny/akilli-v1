@@ -49,7 +49,6 @@ function readImage(event) {
     reader.onload = function (e) {
       console.log('loaded')
       imageSrc = e.target.result
-      videoTag.load()
     }.bind(this)
 
     reader.readAsDataURL(event.target.files[0]);

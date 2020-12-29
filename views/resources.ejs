@@ -1,0 +1,77 @@
+<%- include('partials/header') %> <%- include('partials/navbar-dash') %>
+
+<script src="../assets/js/dropzone.js"></script>
+<link rel="stylesheet" href="../assets/js/dropzone.css" />
+<link rel="stylesheet" href="../assets/css/class.css" />
+<link rel="stylesheet" href="../assets/css/lesson.css" />
+
+<div class="container-fluid">
+  <div class="sidebar">
+    <a href="/class-info">Class Info</a>
+    <a href="/curriculum">Curriculum</a>
+    <a href="/assignment">Assignments</a>
+    <a class="active" href="/resources">Class Files</a>
+  </div>
+
+  <div class="content">
+    <form
+      action="/resources"
+      method="POST"
+      enctype="multipart/form-data"
+      class="dropzone dropzone-form"
+      id="my-awesome-dropzone"
+    >
+      <DIV class="dz-message needsclick">
+        Drop files here or click to upload.<BR />
+      </DIV>
+
+      <a href="/resources" class="btn btn-primary" id="saveLink" style="display: none;">Save file</a>
+    </form>
+
+    <h1>Your files</h1>
+    <% if (typeof classes != undefined) { %>
+     <% classes.files.forEach(file => { %>
+        <a href="<%= file.file %>" download>
+            <div class="added-resources">
+                <p class="resources-paragraph"><%= file.publicId %> </p>
+                <form action="" method="post">
+                    <input type="hidden" name="resourceId" value=<%= file._id %> >
+                <button class="times-icon" type="submit" name="delete" value="delete"><a class=""><i class="fas fa-times "></i></a></button>
+            </form>
+                
+              </div>
+        </a>
+     <% }) %>
+    <% } %>
+   
+   
+  </div>
+</div>
+
+<script>
+    Dropzone.autoDiscover = false;
+  
+    function paramNameForSend() {
+      return "class-resources";
+    }
+    var dropzone = new Dropzone("#my-awesome-dropzone", {
+      url: "/resources",
+      maxFileSize: 1,
+      uploadMultiple: false,
+      autoProcessQueue: true,
+      paramName: paramNameForSend,
+      method: "post",
+      init: function() {
+              this.on('success', function( file, resp ){
+                  var element = document.getElementById('saveLink');
+                  if (element.style.display === "none") {
+                      element.style.display = "block";
+                  } else {
+                      element.style.display = "none";
+                  }
+                });
+              }
+    });
+</script>
+
+<%- include('partials/footer') %>

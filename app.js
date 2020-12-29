@@ -2,12 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session')
-const passport = require('passport');   
+const passport = require('passport');
 const flash = require('express-flash');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const fs = require('fs');
+const path = require('path');
 const passportLocalMongoose = require('passport-local-mongoose');
 var cloudinary = require('cloudinary').v2;
 
@@ -40,12 +41,16 @@ mongoose.set('useCreateIndex', true);
 const userSchema = require('./schemas/userSchema').userSchema;
 const classSchema = require('./schemas/classSchema').classSchema;
 const lessonSchema = require('./schemas/lessonSchema').lessonSchema;
+const assignmentSchema = require('./schemas/assignmentSchema').assignmentSchema;
+const fileSchema = require('./schemas/fileSchema').fileSchema;
 
 userSchema.plugin(passportLocalMongoose);
 // models
 const User = new mongoose.model('User', userSchema);
 const Class = new mongoose.model('Class', classSchema);
 const Lesson = new mongoose.model('Lesson', lessonSchema);
+const Assignment = new mongoose.model("Assignment", assignmentSchema);
+const File = new mongoose.model('File', fileSchema);
 
 passport.use(User.createStrategy());
 
@@ -69,7 +74,12 @@ cloudinary.config({
 app.set('view engine', 'ejs');
 
 app.get('/', function (req, res) {
-    res.render('home')
+    if (req.isAuthenticated()) {
+        res.redirect('/dashboard');
+    } else {
+        res.render('home')
+    }
+
 });
 
 app.get('/about', function (req, res) {
@@ -91,10 +101,15 @@ app.get('/signup', function (req, res) {
 });
 
 
-app.get('/curriculum', function(req, res){
-    if(req.isAuthenticated()){
-        res.render('create-lesson', {classes: req.session.class});
-    }else{
+app.get('/curriculum', function (req, res) {
+    if (req.isAuthenticated()) {
+        if (req.session.class) {
+            res.render('create-lesson', { classes: req.session.class });
+        } else {
+            req.flash('error', 'Please complete class-info to access this');
+            res.redirect('/dashboard');
+        }
+    } else {
         res.redirect('/login');
     }
 });
@@ -130,33 +145,82 @@ app.get('/user', function (req, res) {
 
 });
 
+app.get('/class', function(req, res){
+    req.session.class = undefined;
+    res.redirect('/class-info');
+})
+
 app.get('/class-info', function (req, res) {
     if (req.isAuthenticated()) {
-        res.render('create-class', {classes : req.session.class});
+        console.log(req.session.class);
+        if (req.session.class) {
+            res.render('create-class', { classes: req.session.class });
+        } else {
+            res.render('create-class')
+        }
     } else {
         res.redirect('/login');
     }
 });
 
-app.get('/view-curriculum', async function(req, res){
+app.get('/view-curriculum', async function (req, res) {
     if (req.isAuthenticated()) {
         let user;
         try {
             user = await User.findById(req.user._id);
             const foundClass = user.classes.id(req.session.class._id);
             req.session.class = foundClass;
-            res.render('all-curriculum', {classes : foundClass});
+            res.render('all-curriculum', { classes: foundClass });
+
         } catch (error) {
             console.error(error);
         }
-        
+
     } else {
         res.redirect('/login');
     }
 });
 
+app.get('/assignment', async function (req, res) {
+    if (req.isAuthenticated()) {
+        let user;
+        try {
+            user = await User.findById(req.user._id);
+            const foundClass = user.classes.id(req.session.class._id);
+            req.session.class = foundClass;
+            res.render('assignment', { classes: foundClass });
+
+        } catch (error) {
+            console.error(error);
+        }
+
+    } else {
+        res.redirect('/login');
+    }
+});
+
+
+app.get('/resources', async function (req, res) {
+    if (req.isAuthenticated()) {
+        let user;
+        try {
+            user = await User.findById(req.user._id);
+            const foundClass = user.classes.id(req.session.class._id);
+            req.session.class = foundClass;
+            res.render('resources', { classes: foundClass });
+
+        } catch (error) {
+            console.error(error);
+        }
+
+    } else {
+        res.redirect('/login');
+    }
+
+})
+
 app.post('/signup', function (req, res) {
-   var isActive = req.session.isActive = false;
+    var isActive = req.session.isActive = false;
     User.register({ username: req.body.username }, req.body.password, function (err, user) {
         if (err) {
             console.log(err);
@@ -241,15 +305,15 @@ app.post('/login', function (req, res) {
                 res.redirect('/login')
             } else {
                 passport.authenticate('local')(req, res, function () {
-                    User.findOne({username : user.username}, function(err, foundUser){
-                        if(foundUser.active){
+                    User.findOne({ username: user.username }, function (err, foundUser) {
+                        if (foundUser.active) {
                             res.redirect('/dashboard');
-                        }else{
+                        } else {
                             req.flash('error', 'Please confirm your email address');
                             res.redirect('/login')
                         }
                     })
-                    
+
                 });
             }
         });
@@ -335,7 +399,18 @@ app.post('/edit-lesson', upload.single('edited-lesson-video'), async function (r
             console.log(err);
         }
 
-        res.render('create-lesson', {lesson: foundLesson, classes: foundClass, isEdit: true})
+        if (req.body.delete == 'delete') {
+            foundLesson.remove();
+            user.save(function (err) {
+                if (!err) {
+                    res.redirect('/view-curriculum');
+                } else {
+                    console.log(err);
+                }
+            })
+        } else {
+            res.render('create-lesson', { lesson: foundLesson, classes: foundClass, isEdit: true })
+        }
     }
 
 })
@@ -398,7 +473,7 @@ app.post('/upload-lesson', upload.single('lesson-video'), function (req, res) {
                         foundClass.lesson.push(newLesson);
                         user.save(function (err) {
                             if (!err) {
-                                res.redirect('/curriculum')
+                                res.redirect('/view-curriculum')
                             } else {
                                 console.log(err);
                             }
@@ -472,10 +547,10 @@ app.post('/class-info', function (req, res) {
                 foundUser.save(function (err) {
                     if (!err) {
                         req.flash('info', 'Class-info has been updated');
-                        res.redirect('/class');
+                        res.redirect('/dashboard');
                     } else {
                         console.error(err);
-                        res.redirect
+                        res.redirect('/dashboard')
                     }
                 })
             } else {
@@ -489,7 +564,7 @@ app.post('/class-info', function (req, res) {
                 foundUser.classes.push(newClass);
                 foundUser.save(function () {
                     req.flash('info', 'Class-info has been saved');
-                    res.redirect('/class');
+                    res.redirect('/dashboard');
                 });
             } else {
                 console.log(err);
@@ -499,17 +574,181 @@ app.post('/class-info', function (req, res) {
     }
 });
 
+app.post('/assignment', async function (req, res) {
+    let foundClass;
+    let user;
+    let assignment;
+
+    if (req.body.delete == 'delete') {
+        const assignmentId = req.body.assignmentId;
+        let usedClass;
+        try {
+            user = await User.findById(req.user._id);
+            const foundClassId = req.session.class._id;
+            usedClass = user.classes.id(foundClassId);
+
+            const foundAssignment = usedClass.assignments.id(assignmentId);
+            foundAssignment.remove();
+            user.save(function (err) {
+                if (!err) {
+                    res.redirect('/assignment');
+                } else {
+                    console.log(err);
+                    res.redirect('/assignment');
+                }
+            });
+        } catch (error) {
+            console.log(error);
+            res.redirect('/assignment');
+        }
+
+
+    }
+
+
+    const numberOfQuestions = parseInt(req.body.number);
+    for (let index = 1; index < numberOfQuestions; index++) {
+        const questionInput = "questionInput" + index
+        const question = req.body[questionInput];
+        const radioOption = req.body["questionRadio" + index];
+
+
+
+        try {
+            user = await User.findById(req.user._id)
+            const foundClassId = req.session.class._id;
+            foundClass = user.classes.id(foundClassId);
+
+        } catch (error) {
+            console.log(error);
+
+        }
+
+
+        console.log("option1" + index);
+        const option1 = "option1" + index;
+        const option2 = "option2" + index;
+        if (radioOption == option1) {
+            assignment = new Assignment({
+                question: question,
+                type: "text"
+            });
+        } else if (radioOption == option2) {
+            assignment = new Assignment({
+                question: question,
+                type: "file"
+            });
+        }
+
+        console.log(assignment);
+        if (assignment != null && assignment != undefined) {
+            foundClass.assignments.push(assignment);
+            user.save();
+            // res.redirect('/assignment');
+            if (index == (numberOfQuestions - 1)) {
+                res.redirect('/assignment');
+            }
+
+        }
+    }
+
+});
+
+app.post('/resources', upload.single('class-resources'), async function (req, res) {
+    if (req.isAuthenticated()) {
+        if (req.body.resourceId) {
+            let result;
+            let user;
+            let foundClass;
+            let file
+            try {
+                user = await User.findById(req.user._id);
+                const foundClassId = req.session.class._id;
+                foundClass = user.classes.id(foundClassId);
+                file = foundClass.files.id(req.body.resourceId);
+                console.log(file);
+
+            } catch (error) {
+                console.log(error);
+            }
+            try {
+                result = await cloudinary.uploader.destroy(file.publicId);
+                file.remove();
+                user.save(function (err) {
+                    if (!err) {
+                        res.redirect('/resources');
+                    }
+                })
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        if (req.file) {
+            const file = req.file;
+            const filetypes = /jpeg|jpg|png|gif|mp4|3gp|webp|avi/;
+            // Check ext
+            const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+            // Check mime
+            const mimetype = filetypes.test(file.mimetype);
+
+            if (!mimetype && !extname) {
+                let result;
+                let user;
+                let foundClass;
+                try {
+                    user = await User.findById(req.user._id);
+                    const foundClassId = req.session.class._id;
+                    foundClass = user.classes.id(foundClassId);
+                    result = await cloudinary.uploader.upload(req.file.path, { public_id: file.filename, resource_type: 'raw', overwrite: true });
+                } catch (error) {
+                    console.log(error);
+                }
+                const newFile = new File({
+                    file: result.secure_url,
+                    publicId: result.public_id
+                })
+
+                foundClass.files.push(newFile);
+                user.save(function (err) {
+                    if (!err) {
+                        res.redirect('/resources');
+                    }
+                })
+
+            } else {
+                req.flash('error', 'Unsupported Format');
+                res.redirect('/resources')
+            }
+
+        } else {
+            console.log(req.file);
+        }
+    } else {
+        res.redirect('/login')
+    }
+})
+
 app.post('/class', function (req, res) {
     const classId = req.body.id;
 
-    
 
     User.findOne({ "_id": req.user._id }, function (err, foundUser) {
         if (!err) {
+            if (req.body.change == 'edit') {
+                const foundClass = foundUser.classes.id(classId);
+                req.session.class = foundClass;
+                res.render('create-class', { classes: foundClass });
+            } else if (req.body.change == 'delete') {
+                const foundClass = foundUser.classes.id(classId).remove();
+                foundUser.save(function (err) {
+                    if (!err) {
+                        res.redirect('/dashboard');
+                    } else {
+                        console.log(err);
+                    }
+                })
+            }
 
-            const foundClass = foundUser.classes.id(classId);
-            req.session.class = foundClass;
-            res.render('create-class', { classes: foundClass });
         } else {
             console.error(err);
         }

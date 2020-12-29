@@ -13,3 +13,69 @@
     margin: 20px 0px;
 }
 
+.question-card{
+    background-color: #cccccc;
+    height: 300px;
+    padding: 30px;
+    margin-top: 20px;
+    
+}
+
+.question-input{
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.question-font{
+    font-weight: 600;
+    font-family: Roboto;
+}
+
+#question-container{
+    margin-top: 20px;
+}
+
+.added-assignment{
+    position: relative;;
+    background-color: #e8e8e8;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 5px 20px;
+    box-shadow: 2px 2px #cccccc;
+}
+
+.assignment-paragraph{
+    padding-top: 8px;
+}
+
+.times-icon{
+   
+    float: right;
+    position: absolute;
+    right: 10px;
+    bottom: 20px;
+}
+
+.dropzone-form{
+    margin-bottom: 20px;
+    height: 300px;
+    text-align: center;
+    background: white;
+    border-radius: 5px;
+    border: 2px dashed rgb(0, 135, 247);
+}
+
+.added-resources{
+    position: relative;;
+    background-color: white;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 5px 20px;
+    box-shadow: 2px 2px #cccccc;
+}
+
+.resources-paragraph{
+    padding-top: 8px;
+}

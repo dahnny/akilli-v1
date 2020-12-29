@@ -1,0 +1,178 @@
+<%- include('partials/header') %> <%- include('partials/navbar-dash') %>
+
+<link rel="stylesheet" href="../assets/css/class.css" />
+<link rel="stylesheet" href="../assets/css/lesson.css" />
+<div class="container-fluid">
+  <h1>Your class</h1>
+  <!-- The sidebar -->
+  <div class="sidebar">
+    <a href="/class-info">Class Info</a>
+    <a href="/curriculum">Curriculum</a>
+    <a class="active" href="/assignment">Assignments</a>
+    <a href="#about">About</a>
+  </div>
+
+  <div class="content">
+    <div class="card user-card shadow-sm">
+      <a
+        onclick="addQuestion()"
+        style="width: 200px; color: #a52eff; cursor: pointer;"
+        ><i class="fas fa-plus"></i>Add Question</a
+      >
+
+      <% if (typeof classes != "undefined" ) { %>
+       <% classes.assignments.forEach(assignment => { %>
+
+        <div class="added-assignment">
+            <p class="assignment-paragraph"><%= assignment.question %> </p>
+            <form action="" method="post">
+                <input type="hidden" name="assignmentId" value=<%= assignment._id %> >
+            <button class="times-icon" type="submit" name="delete" value="delete"><a class=""><i class="fas fa-times "></i></a></button>
+        </form>
+            
+          </div>
+       <% }) %>
+      <% } %>
+
+   
+        <form action="" method="post">
+          <div id="question-container"></div>
+        </form>
+        <!-- <div class="question-card">
+          <label class="question-font" for="">What is your question?</label>
+          <input
+            class="form-control question-input"
+            type="text"
+            name=""
+            id=""
+            placeholder="Question"
+          />
+
+          <div class="form-group">
+            <br />
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="exampleRadio"
+                value="option1"
+              />
+              <label class="form-check-label label-size"> Free Text </label>
+            </div>
+            <div class="form-check">
+              <input
+                id="paidRadio"
+                class="form-check-input"
+                type="radio"
+                name="exampleRadio"
+                value="option2"
+              />
+              <label class="form-check-label label-size" for="exampleRadio2">
+                File
+              </label>
+            </div>
+          </div>
+
+          <button class="btn btn-outline-primary" type="submit">Save</button>
+        </div>
+      </div>
+    </div> -->
+
+    <script>
+      var number;
+      var hiddenInput = document.createElement("input");
+      hiddenInput.id = "number";
+      hiddenInput.name = "number";
+      hiddenInput.type = "hidden";
+      function addQuestion() {
+        if (document.getElementById("number") == null) {
+          number = 1;
+        } else {
+        //   console.log(number);
+          number = parseInt(document.getElementById("number").value);
+        }
+
+        hiddenInput.value = number + 1;
+
+        if (number >= 1) {
+          var container = document.getElementById("question-container");
+
+          var questionContainer = document.createElement("div");
+          questionContainer.className = "question-card";
+
+          var label = document.createElement("label");
+          label.innerHTML = "What is your question?";
+          label.className = "question-font";
+
+          var questionInput = document.createElement("input");
+          questionInput.type = "text";
+          questionInput.placeholder = "Question";
+          questionInput.className = "form-control question-input";
+          questionInput.name = "questionInput" + number;
+          questionInput.setAttribute("required", "required");
+
+          var formDiv = document.createElement("div");
+          formDiv.className = "form-group";
+
+          var divlabel = document.createElement("label");
+          divlabel.innerHTML =
+            "Choose format you want answers to be submitted in";
+          divlabel.className = "question-font";
+
+          var formCheck = document.createElement("div");
+          formCheck.className = "form-check";
+
+          //   formDiv.appendChild(document.createElement("label").innerHTML = "Choose format you want answers to be in");
+
+          var freeFormInput = document.createElement("input");
+          freeFormInput.type = "radio";
+          freeFormInput.className = "form-check-input";
+          freeFormInput.name = "questionRadio" + number;
+          freeFormInput.value = "option1" + number;
+          freeFormInput.setAttribute("checked", "checked")
+
+          var label1 = document.createElement("label");
+          label1.innerHTML = "Free text";
+          label1.className = "form-check-label label-size";
+
+          var secondFormCheck = document.createElement("div");
+          secondFormCheck.className = "form-check";
+
+          var fileFormInput = document.createElement("input");
+          fileFormInput.type = "radio";
+          fileFormInput.className = "form-check-input";
+          fileFormInput.name = "questionRadio" + number;
+          fileFormInput.value = "option2" + number;
+
+          var label2 = document.createElement("label");
+          label2.innerHTML = "File";
+          label2.className = "form-check-label label-size";
+
+          formCheck.appendChild(freeFormInput);
+          formCheck.appendChild(label1);
+
+          secondFormCheck.appendChild(fileFormInput);
+          secondFormCheck.appendChild(label2);
+
+          formDiv.appendChild(divlabel);
+          formDiv.appendChild(formCheck);
+          formDiv.appendChild(secondFormCheck);
+
+          var buttonSubmit = document.createElement("button");
+          buttonSubmit.className = "btn btn-outline-primary";
+          buttonSubmit.innerHTML = "Save";
+          buttonSubmit.type = "submit";
+
+          questionContainer.appendChild(label);
+          questionContainer.appendChild(hiddenInput);
+          questionContainer.appendChild(questionInput);
+          questionContainer.appendChild(formDiv);
+          questionContainer.appendChild(buttonSubmit);
+
+          container.appendChild(questionContainer);
+        }
+        // console.log(document.getElementById("number"));
+      }
+    </script>
+  </div>
+</div>

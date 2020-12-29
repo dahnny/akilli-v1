@@ -24,20 +24,43 @@
         <p>Your Profile Image</p>
         <div class="form-group file-input">
           <div>
-
+               <% if (user.profileImage) { %>
+                <img id="userImageOutput" class="bio-image" src= 'data:image/png;base64,<%=user.profileImage%>'>
+                <% } else { %>
                   <img
                   id="userImageOutput"
                   class="bio-image"
                     src="https://breakthrough.org/wp-content/uploads/2018/10/default-placeholder-image.png"
                     alt="">
+              <% } %>
+               
           </div>
 
           <input id="userImageInput" type="file" name="profile-image" accept="image/*">
         </div>
 
-        
+        <script>
+          
+const imageSrc = document.querySelector('#userImageOutput');
+const inputTag = document.querySelector('#userImageInput');
+
+console.log(inputTag);
+
+inputTag.addEventListener('change', readImage)
+
+function readImage(event) {
+  if (event.target.files && event.target.files[0]) {
+    var reader = new FileReader();
+
+    reader.onload = function (e) {
+      console.log('loaded')
+      imageSrc.src = e.target.result
+    }.bind(this)
+
+    reader.readAsDataURL(event.target.files[0]);
+  }
+}
+        </script>
       </form>
     </div>
 </div>
-
-<%- include('partials/footer') %> 

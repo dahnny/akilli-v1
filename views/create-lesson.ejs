@@ -12,7 +12,7 @@
     <a href="/class-info">Class Info</a>
     <a class="active" href="/curriculum">Add Lesson</a>
     <a  href="/view-curriculum">View lessons</a>
-    <a href="#contact">Contact</a>
+    <a href="/assignment">Assignments</a>
     <a href="#about">About</a>
   </div>
 
@@ -25,7 +25,8 @@
       enctype="multipart/form-data"
       onsubmit="getLesson()"
     >
-    <input type="hidden" name="id" value="<%= classes._id %>">
+    <% if (typeof classes != "undefined" && classes) { %><input type="hidden" name="id" value="<%= classes._id %>"><% } %>
+    
     <% if (typeof isEdit != 'undefined' && isEdit) { %>
      <input type="hidden" name="lessonId" value="<%= lesson._id %>">
     <% } %>

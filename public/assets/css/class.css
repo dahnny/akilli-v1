@@ -55,11 +55,9 @@ body{
     float: right;
     position: absolute;
     right: 10px;
-    bottom: 10px;
+    bottom: 20px;
     
 }
-
-
 
 /* The side navigation menu */
 .sidebar {
@@ -70,6 +68,7 @@ body{
     /* position: fixed; */
     height: 300px;
     overflow: auto;
+
   }
   
   /* Sidebar links */
@@ -97,6 +96,7 @@ body{
     margin-left: 200px;
     margin-top: -300px;
     padding: 1px 16px;
+
 
   }
   

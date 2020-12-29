@@ -72,10 +72,18 @@
 
       <form action="/class" method="post">
         <input type="hidden" name="id" value="<%= classes[index]._id %>">
-      <button type="submit"  class="btn btn-lg btn-outline-primary">
-        <i class="fa fa-edit"></i>
-        Edit
-      </button>
+        <div class="row">
+          <button type="submit"  class="btn btn-lg btn-outline-primary col-4" style="margin-right: 5px" name="change" value="edit">
+            <i class="fa fa-edit"></i>
+            Edit
+          </button>
+          <br>
+          <button type="submit"  class="btn btn-lg btn-danger delete-button col-4" style="margin-left:5px" name="change" value="delete">
+            <i class="fa fa-trash"></i>
+            Delete
+          </button>
+        </div>
+    
     </form>
     </div>
   </div>
