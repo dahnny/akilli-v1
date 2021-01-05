@@ -35,6 +35,17 @@
     margin-top: 20px;
 }
 
+.hide-form{
+    display: none;
+    transition-timing-function: ease-in;
+    transition: 0.2s;
+}
+
+#account-form{
+    transition-timing-function: ease;
+    transition: 0.2s;   
+}
+
 .added-assignment{
     position: relative;;
     background-color: #e8e8e8;

@@ -1,0 +1,82 @@
+<%- include('partials/header') %> <%- include('partials/navbar-dash') %>
+<link rel="stylesheet" href="/assets/css/lesson.css" />
+<div class="container">
+  <div id="account-form" class="card user-card shadow-sm hide-form">
+    <h1>Enter your details</h1>
+    <form id="info-form" method="get" action="">
+      <div class="form-group">
+        <label class="label-size" for="">Bank Code</label>
+        <input
+          name="bankCode"
+          type="text"
+          class="form-control"
+          placeholder="Bank Code"
+          value="<%= typeof user != 'undefined' ? user.accountDetails.bankCode : undefined %>"
+        />
+        <a
+          href="https://res.cloudinary.com/dogbuti/image/upload/v1609711155/cbn-bank-codes_vyekyj.pdf"
+          style="text-decoration: underline"
+          >List of Bank Codes</a
+        >
+      </div>
+
+      <div class="form-group price-input hide-class">
+        <label class="label-size" for="">Account Number</label>
+        <input
+          type="number"
+          name="account"
+          class="form-control"
+          placeholder="Account Number"
+          value="<%= typeof user != 'undefined' ? user.accountDetails.account_number : undefined %>"
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary">Verify</button>
+    </form>
+  </div>
+
+  <div class="card mb-4 shadow-sm text-color">
+    <div class="card-header">
+      <h4 class="my-0 font-weight-normal bio-header">Verify Account Details</h4>
+      <a class="btn btn-outline-primary btn-circle" onclick="showVerify()"
+        ><i class="fa fa-edit"></i
+      ></a>
+    </div>
+    <div class="card-body">
+      <div class="bio-header">
+        <p class="lead mt-3 mb-4 text-uppercase">
+          <span class="question-font">Name: </span>
+          <% if (typeof user != 'undefined') { %> <%=
+          user.accountDetails.account_name %> <% } else { %> UNDEFINED <% } %>
+        </p>
+        <p class="lead mt-3 mb-4 text-uppercase">
+          <span class="question-font">Account Number: </span>
+          <% if (typeof user != 'undefined') { %> <%=
+          user.accountDetails.account_number %> <% } else { %> UNDEFINED <% } %>
+        </p>
+        <p class="lead mt-3 mb-4 text-uppercase">
+          <span class="question-font">Bank Code: </span>
+          <% if (typeof user != 'undefined') { %> <%=
+          user.accountDetails.bankCode %> <% } else { %> UNDEFINED <% } %>
+        </p>
+        <p class="lead mt-3 mb-4 text-uppercase">
+          <span class="question-font">Status: </span>
+          <% if (typeof isVerified != 'undefined' && isVerified == true) { %>
+          TRUE <% } else { %> FALSE <% } %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <small style="color: red">
+    *Please ensure you confirm the account details being sent as we would not be
+    responsible for any funds lost due to misinformation
+  </small>
+</div>
+
+<script>
+  function showVerify() {
+    const form = document.getElementById("account-form");
+    form.classList.toggle("hide-form");
+  }
+</script>

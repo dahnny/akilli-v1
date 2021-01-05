@@ -1,7 +1,4 @@
-.text-color {
-  /* height: 120px; */
-  margin-bottom: 30px;
-}
+
 
 .btn-circle{
     width: 50px;
@@ -46,6 +43,11 @@
     border-radius: 20px;
 }
 
+.bio-website{
+    display: block;
+    margin-top: 30px;
+}
+
 @media (max-width : 1024px){
     .class-card{
         width: 100%;
@@ -53,6 +55,3 @@
 }
 
 
-.delete-button{
-  flo
-}

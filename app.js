@@ -9,6 +9,8 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
+const request = require('request')
 const passportLocalMongoose = require('passport-local-mongoose');
 var cloudinary = require('cloudinary').v2;
 
@@ -82,6 +84,7 @@ app.get('/', function (req, res) {
 
 });
 
+
 app.get('/about', function (req, res) {
     res.render('about')
 });
@@ -145,7 +148,7 @@ app.get('/user', function (req, res) {
 
 });
 
-app.get('/class', function(req, res){
+app.get('/class', function (req, res) {
     req.session.class = undefined;
     res.redirect('/class-info');
 })
@@ -217,7 +220,129 @@ app.get('/resources', async function (req, res) {
         res.redirect('/login');
     }
 
-})
+});
+
+app.get('/tutor/:classId', async function (req, res) {
+    const classId = req.params.classId;
+
+    if (req.isAuthenticated()) {
+        let user;
+        let foundClass;
+        try {
+            user = await User.findById(req.user._id);
+            foundClass = user.classes.id(classId);
+            res.render('student-dashboard', { isTutor: true, classes: foundClass, user: user });
+        } catch (error) {
+            console.log(error);
+        }
+    } else {
+        res.redirect('/login');
+    }
+
+});
+
+app.get('/tutor/:classId/curriculum/:lessonNumber', async function (req, res) {
+    const classId = req.params.classId;
+    const number = req.params.lessonNumber;
+    if (req.isAuthenticated()) {
+        let user;
+        let foundClass;
+        try {
+            user = await User.findById(req.user._id);
+            foundClass = user.classes.id(classId);
+        } catch (error) {
+            console.log(error);
+        }
+        if (number > foundClass.lesson.length || number == 0) {
+            console.log('here');
+            res.redirect('back')
+        }
+        const lesson = foundClass.lesson[number - 1];
+        console.log(lesson);
+        res.render('tutor-assignments', {
+            isTutor: true,
+            classes: foundClass,
+            lesson: lesson,
+            currentNumber: number,
+            user: user,
+            numberOflessons: foundClass.lesson.length
+        });
+    } else {
+        res.redirect('/login');
+    }
+});
+
+app.get('/payments', function (req, res) {
+    const bankCode = req.query.bankCode;
+    const accountNumber = req.query.account;
+    const secret = process.env.PAYSTACK_KEY;
+
+    const options = {
+        url: `https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`,
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${secret}`
+        }
+    }
+    let newData;
+    if (req.isAuthenticated()) {
+        if (bankCode != null && accountNumber != null) {
+           request(options, async function(err, resp, body){
+               const newBody = JSON.parse(body);
+               if(!err){
+                   if(resp.statusCode != 200){
+                       
+                    req.flash('error', newBody.message);
+                    res.redirect('/payments'); 
+                   }else{
+                    try {
+                        let user = await User.findById(req.user._id);
+                        newData = newBody.data;
+                        newData.bankCode = bankCode
+                        user.accountDetails = newData;
+                        user.save(function(err){
+                            if(!err){
+                                req.flash('success', 'Account has been verified. Please confirm details');
+                                res.redirect('/payments')
+                            }
+                        });
+                    } catch (error) {
+                        console.log(error);
+                    }
+                   }                  
+               }else{
+                   req.flash('error', err.message);
+                   res.redirect('/payments');
+                   console.log(err);
+               }
+           })
+        } else {
+            res.render('payments', {user: req.user, isVerified: req.user.accountDetails != {} ? true : false});
+        }
+
+
+    } else {
+        res.redirect('/login')
+    }
+});
+
+
+
+app.get('/user/:username', async function (req, res) {
+    let user;
+    try {
+        user = await User.findOne({ username: req.params.username });
+        console.log(req.params.username);
+        console.log(user);
+    } catch (error) {
+        console.log('User does not exist');
+        res.redirect('/')
+    }
+    console.log(user);
+    res.render('landing-page', { user: user, isAuthenticated: (req.isAuthenticated()) })
+});
+
+
 
 app.post('/signup', function (req, res) {
     var isActive = req.session.isActive = false;
@@ -640,7 +765,6 @@ app.post('/assignment', async function (req, res) {
             });
         }
 
-        console.log(assignment);
         if (assignment != null && assignment != undefined) {
             foundClass.assignments.push(assignment);
             user.save();
@@ -752,7 +876,7 @@ app.post('/class', function (req, res) {
         } else {
             console.error(err);
         }
-    })
+    });
 
     // Class.findById(classId, function(err, foundClass){
 

@@ -1,4 +1,16 @@
 
+	/* Preloader */
+	$(window).on('load', function() {
+		var preloaderFadeOutTime = 500;
+		function hidePreloader() {
+			var preloader = $('.spinner-wrapper');
+			setTimeout(function() {
+				preloader.fadeOut(preloaderFadeOutTime);
+			}, 500);
+		}
+		hidePreloader();
+	});
+
 $('input[type=radio][name=exampleRadio]').change(function () {
   if (this.value == 'option1') {
     $('.price-input').addClass('hide-class')
@@ -7,6 +19,8 @@ $('input[type=radio][name=exampleRadio]').change(function () {
     $('.price-input').removeClass('hide-class')
   }
 });
+
+
 
 var isChecked = $('#paidRadio:checked').val() ? true : false;
 if (isChecked) {

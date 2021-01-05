@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
     date: Date,
     profileImage: Buffer,
     bio: String,
+    accountDetails: {},
     classes : [classSchema]
 });
 

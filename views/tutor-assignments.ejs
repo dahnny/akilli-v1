@@ -1,0 +1,90 @@
+<%- include('partials/header') %> <%- include('partials/navbar-dash') %>
+<link rel="stylesheet" href="/assets/css/student.css" />
+
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+<!-- The sidebar -->
+<div class="student-sidebar">
+  <a href="/tutor/<%= classes._id %>" title="Streaming Box(Beta)"
+    ><i class="fas fa-video fa-3x"></i
+  ></a>
+  <a
+    class="active"
+    href="/tutor/<%= classes._id %>/curriculum"
+    title="Curriculum"
+    ><i class="fas fa-book-reader fa-3x"></i
+  ></a>
+  <a href="/assignment" title="Assignment Questions"
+    ><i class="fas fa-user-edit fa-3x"></i
+  ></a>
+  <!-- <a href="/resources">Class Files</a> -->
+</div>
+
+<div class="content">
+    <br>
+    <h1>Lesson Title: <%= lesson.title %> </h1>
+<div class="mainbar">
+    <% if (lesson.video != undefined) { %>
+        <video class="video-input"  src= "<%= lesson.video %>" width="100%"></video>
+    <% } %>
+      <div class="editor-border">
+        <div id="editor" class="lesson-editor video-input"></div>
+      </div>
+
+      <div class="buttons">
+        <% if (currentNumber == numberOflessons && numberOflessons > 1) { %>
+            <a href="/tutor/<%= classes._id %>/curriculum/<%= parseInt(currentNumber) -1 %>" class="btn btn-outline-primary">Previous</a>
+        <% } %>
+
+        <% if (currentNumber < numberOflessons && numberOflessons > 1) { %>
+            <a href="/tutor/<%= classes._id %>/curriculum/<%= parseInt(currentNumber) +1 %>" class="btn btn-outline-primary next-button">Next</a>
+
+          <% } %>
+
+      </div>
+</div>
+<script>
+    const count = 0
+    var editor = document.querySelector("#editor");
+    console.log(editor);
+    var options = {
+      debug: "info",  
+      theme: "bubble",
+    };
+    var quill = new Quill(editor, options);
+    var words = '<%- lesson.content %>'
+    var newContent = JSON.parse(words.replace(/\n/g, '\\n'));
+    quill.setContents(newContent);
+  </script>
+  <div class="sidebar">
+    <div class="gadget">
+      <h2 class="star"><span>Class</span> Files</h2>
+      <div class="clr">
+        <ul class="sb_menu">
+          <% classes.files.forEach(file => { %>
+          <li class="file-list">
+            <a target="blank" href="<%= file.file %>"><%= file.publicId %> </a>
+          </li>
+          <% }) %>
+        </ul>
+        <button type="submit" class="btn btn-primary" style="margin-top: 10px">
+          Edit Assignments
+        </button>
+      </div>
+    </div>
+    <div class="gadget">
+      <h2 class="star"><span>Questions</span></h2>
+      <div class="clr">
+        <ul class="ex_menu">
+          <% classes.assignments.forEach(assignment => { %>
+          <li>
+            <p><%= assignment.question %></p>
+            <hr />
+          </li>
+          <% }) %>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

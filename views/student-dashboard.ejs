@@ -1,0 +1,109 @@
+<%- include('partials/header') %> <%- include('partials/navbar-dash') %>
+<link rel="stylesheet" href="/assets/css/student.css" />
+<script src="https://meet.jit.si/external_api.js"></script>
+<div class="">
+  <!-- The sidebar -->
+  <div class="student-sidebar">
+    <a class="active" href="/tutor/<%= classes._id %>" title="Streaming Box(Beta)"
+      ><i class="fas fa-video fa-3x"></i
+    ></a>
+    <a href="/tutor/<%= classes._id %>/curriculum/1" title="Curriculum"
+      ><i class="fas fa-book-reader fa-3x"></i
+    ></a>
+    <a href="/assignment" title="Assignment Questions"
+      ><i class="fas fa-user-edit fa-3x"></i
+    ></a>
+    <!-- <a href="/resources">Class Files</a> -->
+  </div>
+
+  <div class="content">
+    <div class="conference-box" id="meet"></div>
+    <div class="meeting-buttons">
+        <button
+          type="submit"
+          id="startMeeting"
+          class="btn btn-primary"
+          onclick="startConference()"
+        >
+          Start Meeting
+        </button>
+        <button
+          type="submit"
+          id="stopMeeting"
+          class="btn btn-danger"
+          onclick="stopConference()"
+        >
+          Stop Meeting
+        </button>
+      </div>
+    <script>
+      let api;
+      function startConference() {
+        const domain = "meet.jit.si";
+        const options = {
+          roomName: "<%=classes._id%>",
+          parentNode: document.querySelector("#meet"),
+          userInfo: {
+            email: "<%=user.email%>",
+            displayName: "<%=user.username%>",
+          },
+          configOverwrite: {
+            startWithAudioMuted: true,
+            prejoinPageEnabled: false,
+          },
+          interfaceConfigOverwrite: { SHOW_INVITE_MORE_HEADER: false },
+        };
+        api = new JitsiMeetExternalAPI(domain, options);
+        document
+          .getElementById("startMeeting")
+          .setAttribute("disabled", "disabled");
+      }
+
+      function stopConference() {
+        api.dispose();
+        document
+          .getElementById("startMeeting").disabled = false;
+      }
+    </script>
+
+    <div class="sidebar">
+      <div class="gadget">
+        <h2 class="star"><span>Class</span> Files</h2>
+        <div class="clr">
+          <ul class="sb_menu">
+            <% classes.files.forEach(file => { %>
+            <li class="file-list">
+              <a target="blank" href="<%= file.file %>"
+                ><%= file.publicId %>
+              </a>
+            </li>
+            <% }) %>
+          </ul>
+          <a
+          href="/resources"
+            type="submit"
+            class="btn btn-primary"
+            style="margin-top: 10px"
+          >
+            Edit Files
+        </a>
+        </div>
+      </div>
+      <div class="gadget">
+        <h2 class="star"><span>Questions</span></h2>
+        <div class="clr">
+          <ul class="ex_menu">
+            <% classes.assignments.forEach(assignment => { %>
+            <li>
+              <p><%= assignment.question %></p>
+              <hr />
+            </li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

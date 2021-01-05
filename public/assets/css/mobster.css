@@ -2109,7 +2109,10 @@ hr {
   line-height: 60px;
   font-size: 21px;
 }
-
+.text-color {
+  /* height: 120px; */
+  margin-top: 30px;
+}
 .btn-group.rounded-pill > .btn {
   border-radius: 50rem;
 }
