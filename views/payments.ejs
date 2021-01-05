@@ -38,9 +38,12 @@
   <div class="card mb-4 shadow-sm text-color">
     <div class="card-header">
       <h4 class="my-0 font-weight-normal bio-header">Verify Account Details</h4>
-      <a class="btn btn-outline-primary btn-circle" onclick="showVerify()"
+      <% if (typeof isVerified != 'undefined' && isVerified == false) { %>
+        <a class="btn btn-outline-primary btn-circle" onclick="showVerify()"
         ><i class="fa fa-edit"></i
-      ></a>
+      ></a> 
+      <% } %>
+      
     </div>
     <div class="card-body">
       <div class="bio-header">
@@ -55,9 +58,19 @@
           user.accountDetails.account_number %> <% } else { %> UNDEFINED <% } %>
         </p>
         <p class="lead mt-3 mb-4 text-uppercase">
-          <span class="question-font">Bank Code: </span>
-          <% if (typeof user != 'undefined') { %> <%=
-          user.accountDetails.bankCode %> <% } else { %> UNDEFINED <% } %>
+          <span class="question-font">Settlement Bank: </span>
+          <% if (typeof user != 'undefined' && typeof user.subaccountDetails != 'undefined') { %> <%=
+          user.subaccountDetails.settlement_bank %> <% } else { %> UNDEFINED <% } %>
+        </p>
+        <p class="lead mt-3 mb-4 text-uppercase">
+          <span class="question-font">Currency: </span>
+          <% if (typeof user != 'undefined'  && typeof user.subaccountDetails != 'undefined') { %> <%=
+          user.subaccountDetails.currency %> <% } else { %> UNDEFINED <% } %>
+        </p>
+        <p class="lead mt-3 mb-4 text-uppercase">
+          <span class="question-font">Account Code: </span>
+          <% if (typeof user != 'undefined' && typeof user.subaccountDetails != 'undefined') { %> <%=
+          user.subaccountDetails.subaccount_code %> <% } else { %> UNDEFINED <% } %>
         </p>
         <p class="lead mt-3 mb-4 text-uppercase">
           <span class="question-font">Status: </span>
@@ -72,6 +85,10 @@
     *Please ensure you confirm the account details being sent as we would not be
     responsible for any funds lost due to misinformation
   </small>
+  <br>
+  <small>
+    For security reasons, we only allow one verification per user. Please contact our customer care if there was a mistake.
+  </small>
 </div>
 
 <script>
@@ -80,3 +97,7 @@
     form.classList.toggle("hide-form");
   }
 </script>
+<br>
+<br>
+<br>
+<%- include('partials/footer') %> 

@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
     profileImage: Buffer,
     bio: String,
     accountDetails: {},
+    subaccountDetails:{},
     classes : [classSchema]
 });
 

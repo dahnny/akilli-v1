@@ -287,37 +287,63 @@ app.get('/payments', function (req, res) {
     let newData;
     if (req.isAuthenticated()) {
         if (bankCode != null && accountNumber != null) {
-           request(options, async function(err, resp, body){
-               const newBody = JSON.parse(body);
-               if(!err){
-                   if(resp.statusCode != 200){
-                       
-                    req.flash('error', newBody.message);
-                    res.redirect('/payments'); 
-                   }else{
-                    try {
-                        let user = await User.findById(req.user._id);
-                        newData = newBody.data;
-                        newData.bankCode = bankCode
-                        user.accountDetails = newData;
-                        user.save(function(err){
-                            if(!err){
-                                req.flash('success', 'Account has been verified. Please confirm details');
-                                res.redirect('/payments')
+            request(options, async function (err, resp, body) {
+                const newBody = JSON.parse(body);
+                if (!err) {
+                    if (resp.statusCode != 200) {
+
+                        req.flash('error', newBody.message);
+                        res.redirect('/payments');
+                    } else {
+                        try {
+
+                            let user = await User.findById(req.user._id);
+                            let newOptions = {
+                                url: 'https://api.paystack.co/subaccount',
+                                headers: {
+                                    Authorization: `Bearer ${secret}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                form: {
+                                    business_name: `Akilli_${req.user.username}`,
+                                    bank_code: bankCode,
+                                    account_number: accountNumber,
+                                    percentage_charge: 0.8
+                                }
                             }
-                        });
-                    } catch (error) {
-                        console.log(error);
+                            request.post(newOptions, function (err, resp, body) {
+                                if (!err) {
+
+                                    newData = newBody.data;
+                                    newData.bankCode = bankCode
+                                    user.accountDetails = newData;
+                                    user.subaccountDetails = (JSON.parse(body)).data;
+                                    user.save(function (err) {
+                                        if (!err) {
+                                            req.flash('success', 'Account has been verified and created. You can now receive payments');
+                                            res.redirect('/payments')
+                                        }
+                                    });
+
+                                } else {
+                                    console.log(err);
+                                    req.flash('error', 'There has been an error creating your account');
+                                    res.redirect('/payments');
+                                }
+                            })
+
+                        } catch (error) {
+                            console.log(error);
+                        }
                     }
-                   }                  
-               }else{
-                   req.flash('error', err.message);
-                   res.redirect('/payments');
-                   console.log(err);
-               }
-           })
+                } else {
+                    req.flash('error', err.message);
+                    res.redirect('/payments');
+                    console.log(err);
+                }
+            })
         } else {
-            res.render('payments', {user: req.user, isVerified: req.user.accountDetails != {} ? true : false});
+            res.render('payments', { user: req.user, isVerified: req.user.subaccountDetails != {} ? true : false });
         }
 
 
