@@ -60,9 +60,16 @@
                 <div class="row">
                     <div class="col-lg-6 col-xl-5">
                         <div class="text-container">
-                           <div class="image-wrapper">
-                               <img src="data:image/png;base64,<%=user.profileImage%>" class=" landing-image" alt="">
-                           </div>
+                            <% if (typeof user.profileImage != "undefined") { %>
+                                <div class="image-wrapper">
+                                    <img src="data:image/png;base64,<%=user.profileImage%>" class=" landing-image" alt="">
+                                </div>
+                            <% } else { %>
+                                <div class="image-wrapper">
+                                    <img src="https://breakthrough.org/wp-content/uploads/2018/10/default-placeholder-image.png" class="landing-image" alt="">
+                                </div>  
+                            <% } %>
+                          
                         </div> <!-- end of text-container -->
                     </div> <!-- end of col -->
                     <div class="col-lg-6 col-xl-7">
@@ -129,16 +136,20 @@
                                <h3 class="card-title"><%=foundClass.title%> </h3>
                                 <% if (foundClass.price != undefined && foundClass.isPaid == true) { %>
                                  <h2>$<%= foundClass.price %> </h2>
-
+                                 <div class="card-body">
+                                    <p><%= foundClass.description %> </p>
+                                </div>
+                                <a href="/enroll?user=<%= user.username %>&class_select=<%= foundClass._id %>"><button type="submit" class="btn btn-primary" style="width: 100%;">Enroll</button></a>
                                  <% } else { %>
                                     <h2>FREE</h2>
+                                    <div class="card-body">
+                                        <p><%= foundClass.description %> </p>
+                                    </div>
+                                    <a href="/free?user=<%= user.username %>&class_select=<%= foundClass._id %>"><button type="submit" class="btn btn-primary" style="width: 100%;">Enroll</button></a>
                                 <% } %>
                                
                             </div>
-                            <div class="card-body">
-                                <p><%= foundClass.description %> </p>
-                            </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%;">Enroll</button>
+                           
                         </div>
                     <% }) %>
                     

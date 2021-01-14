@@ -16,7 +16,7 @@
     <div class="card-body">
       <div class="header-body">
         <div class="bio-image">
-          <% if (typeof user != "undefined" && user) { %>
+          <% if (typeof user != "undefined" && typeof user.profileImage != "undefined") { %>
           <img
             class="bio-image shadow wow"
             src="data:image/png;base64,<%=user.profileImage%>"
@@ -97,6 +97,20 @@
   </div>
  <% } %>
   </div>
+  <br><br>
+  <h2>Classes Enrolled For</h2>
+  <div class="row">
+  <% user.enrolledClasses.forEach(enrolled => { %>
+    <div class="card mb-4 shadow-sm wow fadeInUp class-card">
+      <div class="card-body">
+        <h2 class="card-title"><%= enrolled.data.class_title %></h2>
+      <p class="lead mt-3 mb-4"><%= enrolled.data.class_description %></p>
+      </div>
+
+      <button class="btn btn-primary text-uppercase" type="submit" ><a  href="/student-dashboard/?class=<%= enrolled.data.classId%>&tutor=<%= enrolled.data.userId %>" style="color: white;" >join class</button></a>
+    </div>
+  <% }) %>
+</div>
 </div>
 </div>
 

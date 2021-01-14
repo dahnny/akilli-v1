@@ -1,0 +1,126 @@
+<%- include('partials/header') %> 
+<script src="https://js.paystack.co/v1/inline.js"></script> 
+   <!-- Navigation -->
+   <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+    <div class="container">
+
+        <!-- Text Logo - Use this if you don't have a graphic logo -->
+        <!-- <a class="navbar-brand logo-text page-scroll" href="index.html">Tivo</a> -->
+
+        <!-- Image Logo -->
+        <a class="navbar-brand logo-text page-scroll "style="font-family: cursive;" href= <%= typeof isAuthenticated != undefined && isAuthenticated == true ? "/dashboard" :  "/" %> >
+            Akilli
+          </a>
+        
+        <!-- Mobile Menu Toggle Button -->
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-awesome fas fa-bars"></span>
+            <span class="navbar-toggler-awesome fas fa-times"></span>
+        </button>
+        <!-- end of mobile menu toggle button -->
+
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav ml-auto">
+    
+                <li class="nav-item">
+                    <a class="nav-link page-scroll" href="#">CONTACT US</a>
+                </li>
+
+            </ul>
+            <span class="nav-item">
+                <a class="btn-outline-sm" href="/signup">SIGN UP</a>
+            </span>
+        </div>
+    </div> <!-- end of container -->
+</nav> <!-- end of navbar -->
+<!-- end of navigation -->
+
+
+
+    <!-- Header -->
+    <header id="header" class="ex-2-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1><%= foundClass.title %> </h1>
+                   <p><%= foundClass.description %> </p> 
+                    <!-- Sign Up Form -->
+                    <div class="form-container">
+                        <form id="paymentForm"data-toggle="validator" data-focus="false">
+                            <div class="form-group">
+                                <input type="email" class="form-control-input" id="lemail" required>
+                                <label class="label-control" for="lemail">Email</label>
+                                <div class="help-block with-errors"></div>
+                            </div>
+                                                        
+                            <div class="form-group">
+                                <input type="text" class="form-control-input" id="fname" >
+                                <label class="label-control" for="fname">Username</label>
+                                <div class="help-block with-errors"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="tel" class="form-control-input" id="amount" value="<%= foundClass.price %>" disabled>
+                               <label class="label-control" for="amount">Amount</label>
+                                <div class="help-block with-errors"></div>
+                            </div>
+
+                        
+                            <div class="form-group">
+                                <button type="submit" class="form-control-submit-button">ENROLL</button>
+                            </div>
+                            <div class="form-message">
+                                <div id="lmsgSubmit" class="h3 text-center hidden"></div>
+                            </div>
+                            
+                           
+                        </form>
+                    </div> <!-- end of form container -->
+                    <!-- end of sign up form -->
+
+                </div> <!-- end of col -->
+            </div> <!-- end of row -->
+        </div> <!-- end of container -->
+    </header> <!-- end of ex-header -->
+    <!-- end of header -->
+   
+
+    <script>
+        const paymentForm = document.getElementById('paymentForm');
+        paymentForm.addEventListener("submit", payWithPaystack, false);
+        function payWithPaystack(e) {
+        e.preventDefault();
+        let handler = PaystackPop.setup({
+            key: 'pk_test_4bd412558923091383f6f442a39e36b5dc6bddb4', // Replace with your public key
+            email: document.getElementById("lemail").value,
+            amount: document.getElementById("amount").value * 100,
+            first_name:document.getElementById("fname").value,
+            metadata: {
+                class_id: '<%=foundClass._id%>',
+                class_title: '<%=foundClass.title%>',
+                class_description: '<%=foundClass.description%>',
+                user_id: '<%=user._id%>'
+            },
+            subaccount: '<%=user.subaccountDetails.subaccount_code%>',
+            currency: 'USD',
+
+            onClose: function(){
+            alert('Window closed.');
+            },
+            callback: function(response) {
+                var reference = response.reference;
+                alert('Payment complete! Reference: ' + reference);
+                window.location.replace("http://localhost:3000/verify_transaction?reference=" + response.reference + "&refp=<%=user._id%>");
+                },
+        });
+        handler.openIframe();
+        }
+    </script>
+       
+   <!-- Scripts -->
+   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js" integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s" crossorigin="anonymous"></script>
+   <script src="/assets/js/index.js"></script> <!-- Custom scripts -->
+</body>
+</html>

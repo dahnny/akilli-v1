@@ -4,10 +4,10 @@
 <div class="">
   <!-- The sidebar -->
   <div class="student-sidebar">
-    <a class="active" href="/student-dashboard/?class=<%= classes._id%>&tutor=<%= tutor._id %>" title="Streaming Box(Beta)"
+    <a class="active" href="/tutor/<%= classes._id %>" title="Streaming Box(Beta)"
       ><i class="fas fa-video fa-3x"></i
     ></a>
-    <a href="/student/<%= classes._id %>/curriculum/1?user=<%= tutor._id %>" title="Curriculum"
+    <a href="/tutor/<%= classes._id %>/curriculum/1" title="Curriculum"
       ><i class="fas fa-book-reader fa-3x"></i
     ></a>
     <a href="/assignment" title="Assignment Questions"
@@ -37,7 +37,7 @@
         </button>
       </div>
     <script>
-    let api;
+      let api;
       function startConference() {
         const domain = "meet.jit.si";
         const options = {

@@ -11,7 +11,7 @@
           type="text"
           class="form-control"
           placeholder="Bank Code"
-          value="<%= typeof user != 'undefined' ? user.accountDetails.bankCode : undefined %>"
+          value="<%= (typeof user != 'undefined' && typeof user.accountDetails != 'undefined') ? user.accountDetails.bankCode : undefined %>"
         />
         <a
           href="https://res.cloudinary.com/dogbuti/image/upload/v1609711155/cbn-bank-codes_vyekyj.pdf"
@@ -27,7 +27,7 @@
           name="account"
           class="form-control"
           placeholder="Account Number"
-          value="<%= typeof user != 'undefined' ? user.accountDetails.account_number : undefined %>"
+          value="<%= (typeof user != 'undefined' && typeof user.accountDetails != 'undefined') ? user.accountDetails.account_number : undefined %>"
         />
       </div>
 
@@ -38,7 +38,7 @@
   <div class="card mb-4 shadow-sm text-color">
     <div class="card-header">
       <h4 class="my-0 font-weight-normal bio-header">Verify Account Details</h4>
-      <% if (typeof isVerified != 'undefined' && isVerified == false) { %>
+      <% if (isVerified == false) { %>
         <a class="btn btn-outline-primary btn-circle" onclick="showVerify()"
         ><i class="fa fa-edit"></i
       ></a> 
@@ -49,12 +49,12 @@
       <div class="bio-header">
         <p class="lead mt-3 mb-4 text-uppercase">
           <span class="question-font">Name: </span>
-          <% if (typeof user != 'undefined') { %> <%=
+          <% if (typeof user != 'undefined' && typeof user.accountDetails != 'undefined') { %> <%=
           user.accountDetails.account_name %> <% } else { %> UNDEFINED <% } %>
         </p>
         <p class="lead mt-3 mb-4 text-uppercase">
           <span class="question-font">Account Number: </span>
-          <% if (typeof user != 'undefined') { %> <%=
+          <% if (typeof user != 'undefined' && typeof user.accountDetails != 'undefined') { %> <%=
           user.accountDetails.account_number %> <% } else { %> UNDEFINED <% } %>
         </p>
         <p class="lead mt-3 mb-4 text-uppercase">
@@ -74,7 +74,7 @@
         </p>
         <p class="lead mt-3 mb-4 text-uppercase">
           <span class="question-font">Status: </span>
-          <% if (typeof isVerified != 'undefined' && isVerified == true) { %>
+          <% if (typeof isVerified != 'undefined' && typeof user.accountDetails != 'undefined' && isVerified === true) { %>
           TRUE <% } else { %> FALSE <% } %>
         </p>
       </div>

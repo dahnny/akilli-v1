@@ -10,7 +10,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const request = require('request')
+const request = require('request');
+const mg = require('nodemailer-mailgun-transport');
 const passportLocalMongoose = require('passport-local-mongoose');
 var cloudinary = require('cloudinary').v2;
 
@@ -45,6 +46,8 @@ const classSchema = require('./schemas/classSchema').classSchema;
 const lessonSchema = require('./schemas/lessonSchema').lessonSchema;
 const assignmentSchema = require('./schemas/assignmentSchema').assignmentSchema;
 const fileSchema = require('./schemas/fileSchema').fileSchema;
+const enrolledSchema = require('./schemas/enrolledSchema').enrolledSchema;
+
 
 userSchema.plugin(passportLocalMongoose);
 // models
@@ -53,6 +56,7 @@ const Class = new mongoose.model('Class', classSchema);
 const Lesson = new mongoose.model('Lesson', lessonSchema);
 const Assignment = new mongoose.model("Assignment", assignmentSchema);
 const File = new mongoose.model('File', fileSchema);
+const EnrolledClass = new mongoose.model('EnrolledClass', enrolledSchema);
 
 passport.use(User.createStrategy());
 
@@ -109,8 +113,8 @@ app.get('/curriculum', function (req, res) {
         if (req.session.class) {
             res.render('create-lesson', { classes: req.session.class });
         } else {
-            req.flash('error', 'Please complete class-info to access this');
-            res.redirect('/dashboard');
+            req.flash('error', 'Please complete class-info before proceeding');
+            res.redirect('back');
         }
     } else {
         res.redirect('/login');
@@ -127,10 +131,29 @@ app.get('/confirm/:token', function (req, res) {
     });
 })
 
-app.get('/dashboard', function (req, res) {
+app.get('/dashboard',async function (req, res) {
     if (req.isAuthenticated()) {
-        // console.log(req.user);
-        res.render('dashboard', { user: req.user, isAuthenticated: req.isAuthenticated(), classes: req.user.classes });
+        if(req.session.paymentDetails != null && req.session.paymentDetails != {}){
+            try {
+                user = await User.findById(req.user._id);
+                const enrolled = new EnrolledClass({
+                    data: req.session.paymentDetails
+                })
+                user.enrolledClasses.push(enrolled);
+                user.save(function(err){
+                    if(!err){
+                        req.session.paymentDetails = undefined;
+                        res.render('dashboard', { user: req.user, isAuthenticated: req.isAuthenticated(), classes: req.user.classes });
+
+                    }
+                })      
+            } catch (error) {
+                console.log(error);
+            }
+        }else{
+            res.render('dashboard', { user: req.user, isAuthenticated: req.isAuthenticated(), classes: req.user.classes });
+        }
+        
 
     } else {
 
@@ -195,6 +218,8 @@ app.get('/assignment', async function (req, res) {
 
         } catch (error) {
             console.error(error);
+            req.flash('error', 'Please complete class-info before proceeding');
+            res.redirect('back')
         }
 
     } else {
@@ -214,6 +239,8 @@ app.get('/resources', async function (req, res) {
 
         } catch (error) {
             console.error(error);
+            req.flash('error', 'please complete class-info before proceeding');
+            res.redirect('back');
         }
 
     } else {
@@ -231,7 +258,7 @@ app.get('/tutor/:classId', async function (req, res) {
         try {
             user = await User.findById(req.user._id);
             foundClass = user.classes.id(classId);
-            res.render('student-dashboard', { isTutor: true, classes: foundClass, user: user });
+            res.render('tutor-dashboard', { isTutor: true, classes: foundClass, user: user });
         } catch (error) {
             console.log(error);
         }
@@ -253,20 +280,107 @@ app.get('/tutor/:classId/curriculum/:lessonNumber', async function (req, res) {
         } catch (error) {
             console.log(error);
         }
-        if (number > foundClass.lesson.length || number == 0) {
+        if (number > foundClass.lesson.length || number == 0 || typeof foundClass.lesson == 'undefined' || foundClass.lesson == null) {
             console.log('here');
             res.redirect('back')
+        }else{
+            const lesson = foundClass.lesson[number - 1];
+            console.log(lesson);
+            res.render('tutor-assignments', {
+                isTutor: true,
+                classes: foundClass,
+                lesson: lesson,
+                currentNumber: number,
+                tutor: null,
+                user: user,
+                numberOflessons: foundClass.lesson.length
+            });
         }
-        const lesson = foundClass.lesson[number - 1];
-        console.log(lesson);
-        res.render('tutor-assignments', {
-            isTutor: true,
-            classes: foundClass,
-            lesson: lesson,
-            currentNumber: number,
-            user: user,
-            numberOflessons: foundClass.lesson.length
-        });
+        
+    } else {
+        res.redirect('/login');
+    }
+});
+
+app.get('/free', async function(req, res){
+    const id = req.query.class_select;
+    const username = req.query.user;
+
+    
+    let user;
+
+    try {
+        user = await User.findOne({ username: username });
+        let foundClass = user.classes.id(id);
+        req.session.paymentDetails = {
+            status : "free",
+            classId : foundClass._id,
+            class_title: foundClass.title,
+            class_description: foundClass.description,                   
+            userId: user._id,
+        };
+
+        res.redirect('/dashboard');
+    } catch (error) {
+        console.log(error);
+    }
+
+});
+
+app.get('/student-dashboard', async function(req, res){
+    if(req.isAuthenticated()){
+        const classId = req.query.class;
+        const userId = req.query.tutor;
+
+        console.log(userId);
+        console.log(classId);
+
+        try {
+            let user = await User.findById(userId);
+            console.log(user);
+            let foundClass = user.classes.id(classId);
+            res.render('student-dashboard', {classes: foundClass,tutor:user, user: req.user});
+        } catch (error) {
+            console.log(error);
+        }
+
+        
+    }else{
+        res.redirect('/login')
+    }
+   
+});
+app.get('/student/:classId/curriculum/:lessonNumber', async function (req, res) {
+    const classId = req.params.classId;
+    const number = req.params.lessonNumber;
+    const tutorId = req.query.user;
+    if (req.isAuthenticated()) {
+        let tutor;
+        let foundClass;
+        try {
+            tutor = await User.findById(tutorId);
+            foundClass = tutor.classes.id(classId);
+        } catch (error) {
+            console.log(error);
+        }
+        if (number > foundClass.lesson.length || number == 0) {
+            console.log('here');
+            req.flash('info', 'There are no lessons set by the tutor yet! Please contact the tutor to make changes')
+            res.redirect('back')
+        }else{
+            const lesson = foundClass.lesson[number - 1];
+            console.log(lesson);
+            res.render('tutor-assignments', {
+                isTutor: false,
+                classes: foundClass,
+                lesson: lesson,
+                currentNumber: number,
+                tutor: tutor,
+                user: req.user,
+                numberOflessons: foundClass.lesson.length
+            });
+        }
+       
     } else {
         res.redirect('/login');
     }
@@ -308,7 +422,7 @@ app.get('/payments', function (req, res) {
                                     business_name: `Akilli_${req.user.username}`,
                                     bank_code: bankCode,
                                     account_number: accountNumber,
-                                    percentage_charge: 0.8
+                                    percentage_charge: 20
                                 }
                             }
                             request.post(newOptions, function (err, resp, body) {
@@ -343,7 +457,8 @@ app.get('/payments', function (req, res) {
                 }
             })
         } else {
-            res.render('payments', { user: req.user, isVerified: req.user.subaccountDetails != {} ? true : false });
+            console.log(req.user.subaccountDetails != {} && typeof req.user.subaccountDetails != 'undefined');
+            res.render('payments', { user: req.user, isVerified: (req.user.subaccountDetails != {} && typeof req.user.subaccountDetails != 'undefined') ? true : false });
         }
 
 
@@ -352,14 +467,68 @@ app.get('/payments', function (req, res) {
     }
 });
 
+app.get('/enroll', async function (req, res) {
+    const id = req.query.class_select;
+    const username = req.query.user;
 
+    let user;
+
+    try {
+        user = await User.findOne({ username: username });
+        let foundClass = user.classes.id(id);
+        res.render('enrollment', { user: user, foundClass: foundClass, isAuthenticated: req.isAuthenticated() });
+    } catch (error) {
+        console.log(error);
+    }
+
+});
+
+app.get('/verify_transaction', async function (req, res) {
+    const username = req.query.refp;
+    const reference = req.query.reference;
+    console.log(reference);
+    const secret = process.env.PAYSTACK_KEY;
+    let user;
+    const options = {
+        url: `https://api.paystack.co/transaction/verify/${reference}`,
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${secret}`
+        }
+    }
+
+    request(options, async function(err, resp, body){
+        if(!err){
+            if(resp.statusCode == 200){
+                const newBody = JSON.parse(body);
+                        
+                req.session.paymentDetails = {
+                    status : newBody.data.status,
+                    reference : newBody.data.reference,
+                    amount: newBody.data.amount,
+                    classId : newBody.data.metadata.class_id,
+                    class_title: newBody.data.metadata.class_title,
+                    class_description: newBody.data.metadata.class_description,                   
+                    userId: newBody.data.metadata.user_id,
+                    email:  newBody.data.customer.email,
+                    subaccountCode: newBody.data.subaccount.subaccount_code
+                };
+
+                if(req.isAuthenticated()){
+                    res.redirect('/dashboard')
+                }else{
+                    res.redirect('/signup');
+                }
+            }
+        }
+    })
+
+});
 
 app.get('/user/:username', async function (req, res) {
     let user;
     try {
         user = await User.findOne({ username: req.params.username });
-        console.log(req.params.username);
-        console.log(user);
     } catch (error) {
         console.log('User does not exist');
         res.redirect('/')
@@ -399,7 +568,7 @@ app.post('/signup', function (req, res) {
 
 
                         var options = {
-                            host: 'smtp.gmail.com',
+                            host: 'smtp.mailgun.org',
                             port: 465,
                             secure: true,
                             auth: {
@@ -407,6 +576,8 @@ app.post('/signup', function (req, res) {
                                 pass: process.env.SENDGRID_PASSWORD
                             }
                         }
+
+
 
                         var client = nodemailer.createTransport(options);
 

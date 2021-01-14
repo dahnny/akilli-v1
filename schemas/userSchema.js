@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const classSchema = require(__dirname + '/classSchema.js').classSchema;
+const enrolledSchema = require(__dirname + '/enrolledSchema.js').enrolledSchema;
 
 
 
@@ -15,7 +16,8 @@ const userSchema = new mongoose.Schema({
     bio: String,
     accountDetails: {},
     subaccountDetails:{},
-    classes : [classSchema]
+    classes : [classSchema],
+    enrolledClasses: [enrolledSchema],
 });
 
 exports.userSchema = userSchema;
