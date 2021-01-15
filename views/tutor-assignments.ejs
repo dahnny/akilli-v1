@@ -50,6 +50,7 @@
       </div>
 
       <div class="buttons">
+        <% if (isTutor == true) { %>
         <% if (currentNumber == numberOflessons && numberOflessons > 1) { %>
             <a href="/tutor/<%= classes._id %>/curriculum/<%= parseInt(currentNumber) -1 %>" class="btn btn-outline-primary">Previous</a>
         <% } %>
@@ -58,7 +59,16 @@
             <a href="/tutor/<%= classes._id %>/curriculum/<%= parseInt(currentNumber) +1 %>" class="btn btn-outline-primary next-button">Next</a>
 
           <% } %>
-
+          <% } else { %>
+            <% if (currentNumber == numberOflessons && numberOflessons > 1) { %>
+              <a href="/student/<%= classes._id %>/curriculum/<%= parseInt(currentNumber) -1 %>?user=<%= tutor._id %>" class="btn btn-outline-primary">Previous</a>
+          <% } %>
+  
+          <% if (currentNumber < numberOflessons && numberOflessons > 1) { %>
+              <a href="/student/<%= classes._id %>/curriculum/<%= parseInt(currentNumber) +1 %>?user=<%= tutor._id %>" class="btn btn-outline-primary next-button">Next</a>
+  
+            <% } %>
+          <%}%>
       </div>
 </div>
 <script>

@@ -136,9 +136,16 @@ app.get('/dashboard',async function (req, res) {
         if(req.session.paymentDetails != null && req.session.paymentDetails != {}){
             try {
                 user = await User.findById(req.user._id);
+                user.enrolledClasses.forEach(enrolledUser => {
+                    if(enrolledUser.data.classId == req.session.paymentDetails.classId){
+                        req.session.paymentDetails = undefined;
+                       
+                        res.redirect('/dashboard');
+                    }
+                });
                 const enrolled = new EnrolledClass({
                     data: req.session.paymentDetails
-                })
+                });
                 user.enrolledClasses.push(enrolled);
                 user.save(function(err){
                     if(!err){
@@ -280,7 +287,7 @@ app.get('/tutor/:classId/curriculum/:lessonNumber', async function (req, res) {
         } catch (error) {
             console.log(error);
         }
-        if (number > foundClass.lesson.length || number == 0 || typeof foundClass.lesson == 'undefined' || foundClass.lesson == null) {
+        if (number > foundClass.lesson.length || number == 0 || typeof foundClass.lesson == undefined || foundClass.lesson == null) {
             console.log('here');
             res.redirect('back')
         }else{
@@ -312,15 +319,28 @@ app.get('/free', async function(req, res){
     try {
         user = await User.findOne({ username: username });
         let foundClass = user.classes.id(id);
-        req.session.paymentDetails = {
-            status : "free",
-            classId : foundClass._id,
-            class_title: foundClass.title,
-            class_description: foundClass.description,                   
-            userId: user._id,
-        };
 
-        res.redirect('/dashboard');
+        if(req.isAuthenticated()){
+            req.user.enrolledClasses.forEach(enrolledClass => {
+                if(enrolledClass.data.classId == foundClass._id){
+                    req.session.paymentDetails = undefined;
+                    res.redirect('/dashboard')
+                }
+            });
+            req.session.paymentDetails = {
+                status : "free",
+                classId : foundClass._id,
+                class_title: foundClass.title,
+                class_description: foundClass.description,                   
+                userId: user._id,
+            };
+    
+            res.redirect('/dashboard');
+        }
+        else{
+            res.redirect('/login');
+        }
+      
     } catch (error) {
         console.log(error);
     }
@@ -337,7 +357,7 @@ app.get('/student-dashboard', async function(req, res){
 
         try {
             let user = await User.findById(userId);
-            console.log(user);
+           
             let foundClass = user.classes.id(classId);
             res.render('student-dashboard', {classes: foundClass,tutor:user, user: req.user});
         } catch (error) {
@@ -354,6 +374,7 @@ app.get('/student/:classId/curriculum/:lessonNumber', async function (req, res) 
     const classId = req.params.classId;
     const number = req.params.lessonNumber;
     const tutorId = req.query.user;
+    console.log(number);
     if (req.isAuthenticated()) {
         let tutor;
         let foundClass;
@@ -363,7 +384,8 @@ app.get('/student/:classId/curriculum/:lessonNumber', async function (req, res) 
         } catch (error) {
             console.log(error);
         }
-        if (number > foundClass.lesson.length || number == 0) {
+        
+        if (number > foundClass.lesson.length || number == 0|| typeof foundClass.lesson == undefined || foundClass.lesson == null) {
             console.log('here');
             req.flash('info', 'There are no lessons set by the tutor yet! Please contact the tutor to make changes')
             res.redirect('back')
@@ -385,6 +407,10 @@ app.get('/student/:classId/curriculum/:lessonNumber', async function (req, res) 
         res.redirect('/login');
     }
 });
+
+app.get('/student-assignment', function(req, res){
+    
+})
 
 app.get('/payments', function (req, res) {
     const bankCode = req.query.bankCode;
@@ -469,14 +495,28 @@ app.get('/payments', function (req, res) {
 
 app.get('/enroll', async function (req, res) {
     const id = req.query.class_select;
-    const username = req.query.user;
+    const username = req.query.user
 
     let user;
-
+    let studentUser;
     try {
         user = await User.findOne({ username: username });
         let foundClass = user.classes.id(id);
-        res.render('enrollment', { user: user, foundClass: foundClass, isAuthenticated: req.isAuthenticated() });
+        if(req.isAuthenticated()){
+            studentUser = await User.findOne(req.user._id);
+            console.log(studentUser.enrolledClasses);
+            studentUser.enrolledClasses.forEach(enrolled => {
+                if(enrolled.data.classId == id && studentUser != undefined){
+                    res.render('student-dashboard', {classes: foundClass,tutor:user, user: req.user});
+                }else{
+                    res.render('enrollment', { user: user, foundClass: foundClass, isAuthenticated: req.isAuthenticated() }); 
+                }
+            });
+           
+        }else{
+            res.render('enrollment', { user: user, foundClass: foundClass, isAuthenticated: req.isAuthenticated() });
+        }
+       
     } catch (error) {
         console.log(error);
     }
@@ -533,7 +573,7 @@ app.get('/user/:username', async function (req, res) {
         console.log('User does not exist');
         res.redirect('/')
     }
-    console.log(user);
+ 
     res.render('landing-page', { user: user, isAuthenticated: (req.isAuthenticated()) })
 });
 
