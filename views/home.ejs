@@ -8,7 +8,7 @@
     <div class="container h-100">
       <div class="row align-items-center h-100">
         <div class="col-lg-6 wow fadeInUp">
-          <h1 class="mb-4">The best way to setup an online class</h1>
+          <h1 class="mb-4">The easiest way to create your class online</h1>
           <p class="mb-4">
             Leverage streamlined methods to deliver content<br />
             that resonates with your students
@@ -102,18 +102,18 @@
         <div class="col-lg-6 offset-lg-1 py-3 mt-lg-5 wow fadeInUp">
           <h1 class="mb-4">Getting started is simple</h1>
           <ol>
-            <li class="mb-4">Sign up here</li>
+            <li class="mb-4">Sign up <a href="signup  ">here</a> </li>
             <li class="mb-4">Create a class(free or paid)</li>
             <li class="mb-4">Structure lessons according to choice</li>
             <li class="mb-4">Hit publish</li>
           </ol>
-          <a href="#" class="btn btn-outline-primary rounded-pill"
+          <a href="/about" class="btn btn-outline-primary rounded-pill"
             >How it works</a
           >
         </div>
         <div class="col-lg-5 py-3">
           <div class="img-place mobile-preview shadow wow zoomIn">
-            <img src="/assets/img/app_preview_3.png" alt="" />
+            <img class="width-increase" src="/assets/img/undraw_conference_uo36.png" alt="" />
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@
   </div>
 </div>
 
-<div class="page-section bg-dark fg-white">
+<div class="page-section">
   <div class="container">
     <h1 class="text-center">The many graces of using Akilli</h1>
 
@@ -286,13 +286,13 @@
         <p class="cta-text">Give your students the best experience yet!</p>
       </div>
       <div class="col-lg-3 cta-btn-container text-center">
-        <a class="cta-btn align-middle te" href="#">Create class</a>
+        <a class="cta-btn align-middle te" href="/class-info">Create class</a>
       </div>
     </div>
   </div>
 </section>
 
-<div class="page-section">
+<!-- <div class="page-section">
   <div class="container">
     <div class="row">
       <div class="col-lg-7 py-3 mb-5 mb-lg-0">
@@ -306,22 +306,22 @@
           Don't worry just contact us
         </h1>
 
-        <form method="POST" class="mt-5">
+        <form method="POST" action="/contact" class="mt-5">
           <div class="form-group wow fadeInUp">
             <label for="name" class="fw-medium fg-grey">Fullname</label>
-            <input type="text" class="form-control" id="name" />
+            <input type="text" class="form-control" id="name" name="name"/>
           </div>
 
           <div class="form-group wow fadeInUp">
             <label for="email" class="fw-medium fg-grey">Email</label>
-            <input type="text" class="form-control" id="email" />
+            <input type="text" class="form-control" id="email" name="email"/>
           </div>
 
           <div class="form-group wow fadeInUp">
             <label for="message" class="fw-medium fg-grey">Message</label>
-            <textarea rows="6" class="form-control" id="message"></textarea>
+            <textarea rows="6" class="form-control" id="message" name="message"></textarea>
           </div>
-
+          <div class="g-recaptcha" data-sitekey="6LdhFTIaAAAAAAqjgHlEWcMBXlHQHbFrsdfaQy2c"></div><br>
           <div class="form-group mt-4 wow fadeInUp">
             <button type="submit" class="btn btn-primary">Send Message</button>
           </div>
@@ -329,6 +329,6 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
 <%- include('partials/footer') %> 

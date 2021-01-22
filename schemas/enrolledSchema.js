@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const enrolledSchema = new mongoose.Schema({
-    data: {}
+    data: {},
 });
 
 exports.enrolledSchema = enrolledSchema;

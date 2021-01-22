@@ -26,11 +26,26 @@
         </li>
       </ul>
       <div class="ml-auto my-2 my-lg-0">
-        <a href="/class">
-        <button class="btn btn-outline-light rounded-pill text-uppercase">
-            Create Class
-          </button>
-        </a>
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a href="/class">
+              <button class="btn btn-outline-light rounded-pill text-uppercase">
+                  Create Class
+                </button>
+              </a>
+          </li>
+          <% if (typeof user != undefined) { %>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" style="color: white;" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Settings
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="/logout">Logout</a>
+  
+              </div>
+            </li>
+          <% } %>
+
       </div>
     </div>
   </div>

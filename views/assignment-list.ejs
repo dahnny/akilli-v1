@@ -9,27 +9,21 @@
     <a href="/class-info">Class Info</a>
     <a href="/curriculum">Curriculum</a>
     <a class="active" href="/assignment">Assignments</a>
-    <a href="/resources">Class Files</a>
-    <a href="/submitted-assignments?class=<%= classes._id %> ">Submitted Assignments</a>
-
+    <a href="/submitted assignments">Submitted Assignments</a>
   </div>
 
   <div class="content">
     <div class="card user-card shadow-sm">
-      <a
-        onclick="addQuestion()"
-        style="width: 200px; color: #a52eff; cursor: pointer;"
-        ><i class="fas fa-plus"></i>Add Question</a
-      >
 
       <% if (typeof classes != "undefined" ) { %>
        <% classes.assignments.forEach(assignment => { %>
 
         <div class="added-assignment">
-            <p class="assignment-paragraph"><%= assignment.question %> </p>
-            <form action="" method="post">
-                <input type="hidden" name="assignmentId" value=<%= assignment._id %> >
-            <button class="times-icon" type="submit" name="delete" value="delete"><a class=""><i class="fas fa-times "></i></a></button>
+            <h5 class="assignment-paragraph"><%= assignment.question %> </h5>
+            <% assignment.answer.forEach(answer => { %>
+             <h6><%= answer.studentId %> </h6>   
+             <textarea name="" id="" disabled><%= answer.answer %></textarea>
+            <% }) %>
         </form>
             
           </div>
@@ -116,49 +110,49 @@
           var formDiv = document.createElement("div");
           formDiv.className = "form-group";
 
-          // var divlabel = document.createElement("label");
-          // divlabel.innerHTML =
-          //   "Choose format you want answers to be submitted in";
-          // divlabel.className = "question-font";
+          var divlabel = document.createElement("label");
+          divlabel.innerHTML =
+            "Choose format you want answers to be submitted in";
+          divlabel.className = "question-font";
 
-          // var formCheck = document.createElement("div");
-          // formCheck.className = "form-check";
+          var formCheck = document.createElement("div");
+          formCheck.className = "form-check";
 
-          // //   formDiv.appendChild(document.createElement("label").innerHTML = "Choose format you want answers to be in");
+          //   formDiv.appendChild(document.createElement("label").innerHTML = "Choose format you want answers to be in");
 
-          // var freeFormInput = document.createElement("input");
-          // freeFormInput.type = "radio";
-          // freeFormInput.className = "form-check-input";
-          // freeFormInput.name = "questionRadio" + number;
-          // freeFormInput.value = "option1" + number;
-          // freeFormInput.setAttribute("checked", "checked")
+          var freeFormInput = document.createElement("input");
+          freeFormInput.type = "radio";
+          freeFormInput.className = "form-check-input";
+          freeFormInput.name = "questionRadio" + number;
+          freeFormInput.value = "option1" + number;
+          freeFormInput.setAttribute("checked", "checked")
 
-          // var label1 = document.createElement("label");
-          // label1.innerHTML = "Free text";
-          // label1.className = "form-check-label label-size";
+          var label1 = document.createElement("label");
+          label1.innerHTML = "Free text";
+          label1.className = "form-check-label label-size";
 
-          // var secondFormCheck = document.createElement("div");
-          // secondFormCheck.className = "form-check";
+          var secondFormCheck = document.createElement("div");
+          secondFormCheck.className = "form-check";
 
-          // var fileFormInput = document.createElement("input");
-          // fileFormInput.type = "radio";
-          // fileFormInput.className = "form-check-input";
-          // fileFormInput.name = "questionRadio" + number;
-          // fileFormInput.value = "option2" + number;
+          var fileFormInput = document.createElement("input");
+          fileFormInput.type = "radio";
+          fileFormInput.className = "form-check-input";
+          fileFormInput.name = "questionRadio" + number;
+          fileFormInput.value = "option2" + number;
 
-          // var label2 = document.createElement("label");
-          // label2.innerHTML = "File";
-          // label2.className = "form-check-label label-size";
+          var label2 = document.createElement("label");
+          label2.innerHTML = "File";
+          label2.className = "form-check-label label-size";
 
-          // formCheck.appendChild(freeFormInput);
-          // formCheck.appendChild(label1);
+          formCheck.appendChild(freeFormInput);
+          formCheck.appendChild(label1);
 
-          // secondFormCheck.appendChild(fileFormInput);
-          // secondFormCheck.appendChild(label2);
+          secondFormCheck.appendChild(fileFormInput);
+          secondFormCheck.appendChild(label2);
 
-          // formDiv.appendChild(divlabel);
-          // formDiv.appendChild(formCheck);
-          // formDiv.appendChild(secondFormCheck);
+          formDiv.appendChild(divlabel);
+          formDiv.appendChild(formCheck);
+          formDiv.appendChild(secondFormCheck);
 
           var buttonSubmit = document.createElement("button");
           buttonSubmit.className = "btn btn-outline-primary";

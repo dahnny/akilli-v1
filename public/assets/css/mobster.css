@@ -5,6 +5,8 @@
  * License under CC 4.0 ()
  */
 
+ 
+
 :root {
   --primary: #3d58f3;
   --secondary: #a52eff;
@@ -2311,8 +2313,6 @@ hr {
 
 .mobile-preview {
   width: 100%;
-  max-width: 233px;
-  height: auto;
   border-radius: 30px;
 }
 

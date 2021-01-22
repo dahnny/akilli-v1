@@ -57,6 +57,11 @@ body {
   bottom: 20px;
 }
 
+.width-increase{
+  width: 200px;
+  height: 200px;
+}
+
 /* The side navigation menu */
 .sidebar {
   margin: 0;
@@ -64,7 +69,7 @@ body {
   width: 200px;
   background-color: #f1f1f1;
   /* position: fixed; */
-  height: 300px;
+  height: 400px;
   overflow: auto;
 }
 
@@ -91,7 +96,7 @@ body {
 /* Page content. The value of the margin-left property should match the value of the sidebar's width property */
 div.content {
   margin-left: 200px;
-  margin-top: -300px;
+  margin-top: -400px;
   padding: 1px 16px;
 }
 

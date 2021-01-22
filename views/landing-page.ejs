@@ -27,13 +27,11 @@
                     <div class="collapse navbar-collapse" id="navbarToggler">
                         <ul style="font-size: 20px;" class="navbar-nav ml-lg-5 mt-3 mt-lg-0 text-uppercase">
                           <li class="nav-item active">
-                            <a class="nav-link" href="#"
+                            <a class="nav-link" href="/dashboard"
                               >Dashboard <span class="sr-only">(current)</span></a
                             >
                           </li>
-                          <li class="nav-item">
-                            <a class="nav-link" href="#">Features</a>
-                          </li>
+
                         </ul>
                        
                       </div>
@@ -91,7 +89,7 @@
                      <!-- end of img-wrapper -->
                      <div class="copy-link">
                          <h5 style="color: white;">Copy website link</h4>
-                        <input type="text" class="input100" onclick="selectFunction()" style="	padding-left: 20px;" value="localhost:3000/<%= user.username %> " id="myInput">
+                        <input type="text" class="input100" onclick="selectFunction()" style="	padding-left: 20px;" value="localhost:3000/user/<%= user.username %> " id="myInput">
                         
                     </div>
                     <span><i onclick="selectFunction()" class="far fa-clipboard fa-2x" style="color: white; padding-top: 7px;"></i></span>

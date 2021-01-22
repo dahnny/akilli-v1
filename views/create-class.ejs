@@ -12,6 +12,9 @@
   <a href="/curriculum">Curriculum</a>
   <a href="/assignment">Assignments</a>
   <a href="/resources">Class Files</a>
+  <% if (typeof classes != "undefined" && classes) { %>
+    <a href="/submitted-assignments?class=<%= classes._id %>">Submitted Assignments</a>  <% } %>
+  
 </div>
 
 <!-- Page content -->
@@ -30,7 +33,7 @@
         <input
           name="title"
           type="text"
-        
+          required
           class="form-control"
           placeholder="Class Title"
           <% if (typeof classes != "undefined" && classes) { %>
@@ -71,7 +74,7 @@
         </div>
       </div>
       <div class="form-group price-input hide-class">
-          <label class="label-size" for="">Price</label>
+          <label class="label-size" for="">Price (dollars)</label>
           <input
           
             type="number"
@@ -109,12 +112,13 @@
       <div class="form-group">
           <label class="label-size" for="">Class Description</label>
         <textarea
+        required
           class="form-control"
           name="description"
           id=""
           cols="30"
           rows="10"
-          placeholder="How would you describe your class"
+          placeholder="How would you describe your class?"
         ><% if (typeof classes != "undefined" && classes) { %><%= classes.description %><% } %></textarea>
       </div>
       <button type="submit" class="btn btn-primary">Save</button>
