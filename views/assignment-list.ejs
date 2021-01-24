@@ -8,8 +8,10 @@
   <div class="sidebar">
     <a href="/class-info">Class Info</a>
     <a href="/curriculum">Curriculum</a>
-    <a class="active" href="/assignment">Assignments</a>
-    <a href="/submitted assignments">Submitted Assignments</a>
+    <a href="/assignment">Assignments</a>
+    <a href="/resources">Class Files</a>
+    <% if (typeof classes != "undefined" && classes) { %>
+      <a class="active" href="/submitted-assignments?class=<%= classes._id %>">Submitted Assignments</a>  <% } %>
   </div>
 
   <div class="content">

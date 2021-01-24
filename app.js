@@ -11,10 +11,17 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const request = require('request');
+var http = require('http');
+var url = require('url') ;
 const mg = require('nodemailer-mailgun-transport');
 
-const passportLocalMongoose = require('passport-local-mongoose');
-var cloudinary = require('cloudinary').v2;
+
+const resourcesController = require('./controllers/resourcesController');
+const {postAdd, editUser} = require('./controllers/userController');
+const User = require('./schemas/userSchema');
+const assignmentController = require('./controllers/assignmentController');
+const classController = require('./controllers/classController');
+const {uploadLesson, editLesson} = require('./controllers/lessonController');   
 
 
 
@@ -23,6 +30,7 @@ const upload = require('./helpers/storage').upload;
 
 const app = express();
 
+// mongoose.connect(`mongodb+srv://danny:${process.env.MONGO_PASSWORD}@cluster0.j8grj.mongodb.net/akilliDB?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.connect('mongodb://localhost:27017/akilliDB', { useNewUrlParser: true, useUnifiedTopology: true });
 
 
@@ -44,20 +52,17 @@ mongoose.set('useCreateIndex', true);
 //schemas
 
 
-const userSchema = require('./schemas/userSchema').userSchema;
-const classSchema = require('./schemas/classSchema').classSchema;
-const lessonSchema = require('./schemas/lessonSchema').lessonSchema;
-const assignmentSchema = require('./schemas/assignmentSchema').assignmentSchema;
+
+
+const {assignmentSchema} = require('./schemas/assignmentSchema');
+const userController = require('./controllers/userController');
 const fileSchema = require('./schemas/fileSchema').fileSchema;
 const enrolledSchema = require('./schemas/enrolledSchema').enrolledSchema;
 const answerSchema = require('./schemas/answerSchema').answerSchema;
 
 
-userSchema.plugin(passportLocalMongoose);
-// models
-const User = new mongoose.model('User', userSchema);
-const Class = new mongoose.model('Class', classSchema);
-const Lesson = new mongoose.model('Lesson', lessonSchema);
+
+
 const Assignment = new mongoose.model("Assignment", assignmentSchema);
 const File = new mongoose.model('File', fileSchema);
 const EnrolledClass = new mongoose.model('EnrolledClass', enrolledSchema);
@@ -75,13 +80,6 @@ passport.deserializeUser(function (id, done) {
     });
 });
 
-
-cloudinary.config({
-    cloud_name: 'dogbuti',
-    api_key: '566727145985371',
-    api_secret: process.env.CLOUDINARY_SECRET
-});
-
 app.set('view engine', 'ejs');
 
 app.get('/', function (req, res) {
@@ -92,7 +90,6 @@ app.get('/', function (req, res) {
     }
 
 });
-
 
 app.get('/about', function (req, res) {
     res.render('about')
@@ -353,14 +350,19 @@ app.get('/free', async function (req, res) {
                     res.redirect('/dashboard')
                 }
             });
-            req.session.paymentDetails = {
-                status: "free",
-                classId: foundClass._id,
-                class_title: foundClass.title,
-                class_description: foundClass.description,
-                userId: user._id,
-            };
-            res.redirect('/dashboard');
+            if(req.user.username == username){
+                req.flash('error', 'Nice Try! You cannot enroll for your own class');
+                res.redirect(`/user/${user.username}`)
+            }else{
+                req.session.paymentDetails = {
+                    status: "free",
+                    classId: foundClass._id,
+                    class_title: foundClass.title,
+                    class_description: foundClass.description,
+                    userId: user._id,
+                };
+                res.redirect('/dashboard');
+            }
         }
         else {
             res.redirect('/login');
@@ -626,6 +628,7 @@ app.get('/verify_transaction', async function (req, res) {
 
 app.get('/user/:username', async function (req, res) {
     let user;
+    let hostname = req.headers.host
     try {
         user = await User.findOne({ username: req.params.username });
     } catch (error) {
@@ -633,7 +636,7 @@ app.get('/user/:username', async function (req, res) {
         res.redirect('/')
     }
 
-    res.render('landing-page', { user: user, isAuthenticated: (req.isAuthenticated()) })
+    res.render('landing-page', { user: user, isAuthenticated: (req.isAuthenticated()), hostname: hostname })
 });
 
 
@@ -857,472 +860,21 @@ app.post('/student-assignment', async function (req, res) {
 
 });
 
-app.post('/user', upload.single('profile-image'), function (req, res) {
-    const bio = req.body.bio;
-    if (req.isAuthenticated()) {
-        User.findById(req.user._id, function (err, user) {
-            if (!err) {
-                if (req.fileValidationError) {
-                    console.log(req.fileValidationError);
-                    res.redirect('back')
-                }
-                else if (!req.file && !user.profileImage) {
-                    req.flash('error', 'Please select an image to upload');
-                    console.log('please select an image to upload');
-                    res.redirect('back');
-                }
-                else {
-                    if (req.file) {
-                        var img = fs.readFileSync(req.file.path);
-                        var encode_image = img.toString('base64');
-                        user.profileImage = encode_image;
-                    }
-                    user.bio = bio;
-                    user.save(function (err) {
-                        req.flash('info', 'Your profile has been saved');
-                        res.redirect('/dashboard');
-                    });
-
-                }
-            }
-        });
-    } else {
-        res.redirect('/login');
-    }
+app.post('/user', upload.single('profile-image'),editUser);
 
 
-});
+app.post('/edit-lesson', upload.single('edited-lesson-video'),editLesson)
 
+app.post('/upload-lesson', upload.single('lesson-video'), uploadLesson);
 
-app.post('/edit-lesson', upload.single('edited-lesson-video'), async function (req, res) {
-    const classId = req.body.id;
-    const isEdit = req.body.isEdit;
-    const lessonId = req.body.lessonId;
+app.post('/class-info', classController.classInfo);
 
-    // console.log(req.body);
-    if (req.isAuthenticated()) {
-        let user;
-        let foundLesson;
-        let foundClass;
-        try {
-            user = await User.findById(req.user._id);
-            // console.log(req.body);
-            foundClass = user.classes.id(classId);
-            // console.log(foundClass);
-            foundLesson = foundClass.lesson.id(lessonId);
+app.post('/assignment',assignmentController.assignment);
 
-        } catch (err) {
-            console.log(err);
-        }
+app.post('/resources', upload.single('class-resources'), resourcesController.resources)
 
-        if (req.body.delete == 'delete') {
-            foundLesson.remove();
-            user.save(function (err) {
-                if (!err) {
-                    res.redirect('/view-curriculum');
-                } else {
-                    console.log(err);
-                }
-            })
-        } else {
-            res.render('create-lesson', { lesson: foundLesson, classes: foundClass, isEdit: true })
-        }
-    }
-
-})
-
-app.post('/upload-lesson', upload.single('lesson-video'), function (req, res) {
-    const title = req.body.title;
-    const content = req.body.content;
-    const classId = req.body.id;
-    const isEdit = req.body.isEdit;
-    let videoId = crypto.randomBytes(10).toString('hex')
-
-    if (req.isAuthenticated()) {
-        User.findById(req.user._id, function (err, user) {
-
-            if (!err) {
-                if (req.fileValidationError) {
-                    console.log(req.fileValidationError);
-                }
-                const foundClass = user.classes.id(classId);
-                if (isEdit === 'true') {
-                    lessonId = req.body.lessonId;
-                    const foundLesson = foundClass.lesson.id(lessonId);
-                    foundLesson.set({
-                        title: title,
-                        content: content
-                    });
-                    user.save();
-                    if (req.file) {
-                        cloudinary.uploader.upload(req.file.path, {
-                            resource_type: 'video', overwrite: true,
-                            public_id: "lesson-video" + "/" + foundLesson.videoId
-                        },
-                            function (error, result) {
-                                if (!error) {
-                                    foundLesson.set({
-                                        video: result.secure_url
-                                    });
-
-                                    user.save(function (err) {
-                                        if (!err) {
-                                            req.flash('info', 'Class-info has been updated');
-                                            res.redirect('/view-curriculum');
-                                        }
-                                    });
-                                }
-                            })
-                    } else {
-                        req.flash('info', 'Class-info has been updated');
-                        res.redirect('/view-curriculum');
-                    }
-
-                } else {
-                    if (!req.file) {
-                        const newLesson = new Lesson({
-                            videoId: videoId,
-                            title: title,
-                            content: content
-                        });
-
-                        foundClass.lesson.push(newLesson);
-                        user.save(function (err) {
-                            if (!err) {
-                                res.redirect('/view-curriculum')
-                            } else {
-                                console.log(err);
-                            }
-                        });
-                    } else {
-                        cloudinary.uploader.upload(req.file.path, { resource_type: 'video', overwrite: true, public_id: "lesson-video" + "/" + videoId }, function (error, result) {
-                            if (!error) {
-                                const newLesson = new Lesson({
-                                    videoId: videoId,
-                                    title: title,
-                                    video: result.secure_url,
-                                    content: content
-                                });
-
-                                foundClass.lesson.push(newLesson);
-                                user.save(function (err) {
-                                    if (!err) {
-                                        res.redirect('/dashboard')
-                                    }
-                                });
-
-                            } else {
-                                req.flash('error', error.message);
-                                res.redirect('back')
-                            }
-                        });
-                    }
-                }
-            }
-        });
-    }
-});
-
-app.post('/class-info', function (req, res) {
-    const id = req.body.id;
-    const title = req.body.title;
-    const price = req.body.price
-    const startDate = req.body.startDate;
-    const endDate = req.body.endDate;
-    const description = req.body.description;
-
-    let isPaid;
-    if (req.body.exampleRadio == 'option1') {
-        isPaid = false;
-    } else if (req.body.exampleRadio == 'option2') {
-        isPaid = true;
-    }
-
-    const newClass = new Class({
-        title: title,
-        isPaid: isPaid,
-        price: price,
-        startDate: startDate,
-        endDate: endDate,
-        description: description
-    });
-
-    if (id) {
-        User.findOne({ "_id": req.user._id }, function (err, foundUser) {
-            if (!err) {
-
-                const foundClass = foundUser.classes.id(id);
-                foundClass.set({
-                    title: title,
-                    isPaid: isPaid,
-                    price: price,
-                    startDate: startDate,
-                    endDate: endDate,
-                    description: description
-                });
-                foundUser.save(function (err) {
-                    if (!err) {
-                        req.flash('info', 'Class-info has been updated');
-                        res.redirect('/dashboard');
-                    } else {
-                        console.error(err);
-                        res.redirect('/dashboard')
-                    }
-                })
-            } else {
-                console.error(err);
-            }
-        })
-    } else {
-
-        User.findById(req.user._id, function (err, foundUser) {
-            if (!err) {
-                foundUser.classes.push(newClass);
-                foundUser.save(function () {
-                    req.flash('info', 'Class-info has been saved');
-                    res.redirect('/dashboard');
-                });
-            } else {
-                console.log(err);
-                res.redirect('back');
-            }
-        });
-    }
-});
-
-app.post('/assignment', async function (req, res) {
-    let foundClass;
-    let user;
-    let assignment;
-
-    if (req.body.delete == 'delete') {
-        const assignmentId = req.body.assignmentId;
-        let usedClass;
-        try {
-            user = await User.findById(req.user._id);
-            const foundClassId = req.session.class._id;
-            usedClass = user.classes.id(foundClassId);
-
-            const foundAssignment = usedClass.assignments.id(assignmentId);
-            foundAssignment.remove();
-            user.save(function (err) {
-                if (!err) {
-                    res.redirect('/assignment');
-                } else {
-                    console.log(err);
-                    res.redirect('/assignment');
-                }
-            });
-        } catch (error) {
-            console.log(error);
-            res.redirect('/assignment');
-        }
-
-
-    }
-
-
-    const numberOfQuestions = parseInt(req.body.number);
-    for (let index = 1; index < numberOfQuestions; index++) {
-        const questionInput = "questionInput" + index
-        const question = req.body[questionInput];
-        const radioOption = req.body["questionRadio" + index];
-
-
-
-        try {
-            user = await User.findById(req.user._id)
-            const foundClassId = req.session.class._id;
-            foundClass = user.classes.id(foundClassId);
-
-        } catch (error) {
-            console.log(error);
-
-        }
-
-
-        console.log("option1" + index);
-        const option1 = "option1" + index;
-        const option2 = "option2" + index;
-
-        assignment = new Assignment({
-            question: question,
-            type: "text"
-        });
-
-
-        if (assignment != null && assignment != undefined) {
-            foundClass.assignments.push(assignment);
-            user.save();
-            // res.redirect('/assignment');
-            if (index == (numberOfQuestions - 1)) {
-                res.redirect('/assignment');
-            }
-
-        }
-    }
-
-});
-
-app.post('/resources', upload.single('class-resources'), async function (req, res) {
-    if (req.isAuthenticated()) {
-        if (req.body.resourceId) {
-            let result;
-            let user;
-            let foundClass;
-            let file
-            try {
-                user = await User.findById(req.user._id);
-                const foundClassId = req.session.class._id;
-                foundClass = user.classes.id(foundClassId);
-                file = foundClass.files.id(req.body.resourceId);
-                console.log(file);
-
-            } catch (error) {
-                console.log(error);
-            }
-            try {
-                result = await cloudinary.uploader.destroy(file.publicId);
-                file.remove();
-                user.save(function (err) {
-                    if (!err) {
-                        res.redirect('/resources');
-                    }
-                })
-            } catch (error) {
-                console.log(error);
-            }
-        }
-        if (req.file) {
-            const file = req.file;
-            const filetypes = /jpeg|jpg|png|gif|mp4|3gp|webp|avi/;
-            // Check ext
-            const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-            // Check mime
-            const mimetype = filetypes.test(file.mimetype);
-
-            if (!mimetype && !extname) {
-                let result;
-                let user;
-                let foundClass;
-                try {
-                    user = await User.findById(req.user._id);
-                    const foundClassId = req.session.class._id;
-                    foundClass = user.classes.id(foundClassId);
-                    result = await cloudinary.uploader.upload(req.file.path, { public_id: file.filename, resource_type: 'raw', overwrite: true });
-                } catch (error) {
-                    console.log(error);
-                }
-                const newFile = new File({
-                    file: result.secure_url,
-                    publicId: result.public_id
-                })
-
-                foundClass.files.push(newFile);
-                user.save(function (err) {
-                    if (!err) {
-                        res.redirect('/resources');
-                    }
-                })
-
-            } else {
-                req.flash('error', 'Unsupported Format');
-                res.redirect('/resources')
-            }
-
-        } else {
-            console.log(req.file);
-        }
-    } else {
-        res.redirect('/login')
-    }
-})
-
-app.post('/class', function (req, res) {
-    const classId = req.body.id;
-
-
-    User.findOne({ "_id": req.user._id }, function (err, foundUser) {
-        if (!err) {
-            if (req.body.change == 'edit') {
-                const foundClass = foundUser.classes.id(classId);
-                req.session.class = foundClass;
-                res.render('create-class', { classes: foundClass });
-            } else if (req.body.change == 'delete') {
-                const foundClass = foundUser.classes.id(classId).remove();
-                foundUser.save(function (err) {
-                    if (!err) {
-                        res.redirect('/dashboard');
-                    } else {
-                        console.log(err);
-                    }
-                })
-            }
-
-        } else {
-            console.error(err);
-        }
-    });
-
-    // Class.findById(classId, function(err, foundClass){
-
-    // });
-});
-app.post('/contact', function (req, res) {
-    const name = req.body.name;
-    const message = req.body.message;
-    console.log(req.body['g-recaptcha-response']);
-    if (req.body['g-recaptcha-response'] === undefined || req.body['g-recaptcha-response'] === '' || req.body['g-recaptcha-response'] === null) {
-        return res.json({ "responseError": "something goes to wrong" });
-    }
-    const secretKey = process.env.RECAPTCHA_SECRET;
-
-    const verificationURL = "https://www.google.com/recaptcha/api/siteverify?secret=" + secretKey + "&response=" + req.body['g-recaptcha-response'] + "&remoteip=" + req.connection.remoteAddress;
-    var options = {
-        host: 'smtp.mailgun.org',
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.SENDGRID_USERNAME,
-            pass: process.env.SENDGRID_PASSWORD
-        }
-    }
-
-    request(verificationURL, function (error, response, body) {
-        body = JSON.parse(body);
-
-        if (body.success !== undefined && !body.success) {
-            return res.json({ "responseError": "Failed captcha verification" });
-        }
-        var client = nodemailer.createTransport(options);
-
-        var email = {
-            from: 'danielogbuti@gmail.com',
-            to: 'danielogbuti@gmail.com',
-            subject: 'Customer Message',
-            text:
-                'This is the customer message\n\n' +
-                message + `${name} sent the message`,
-
-        };
-
-        client.sendMail(email, function (err, info) {
-
-            if (err) {
-                console.log(err);
-                req.flash('error', 'Error Occured in sending email');
-                res.redirect('back');
-            }
-            else {
-
-                req.flash('info', 'An e-mail has been sent to support successfully');
-                console.log('Message sent: ' + info.response);
-                res.redirect('back');
-            }
-        });
-    })
-
-})
+app.post('/class', require('./controllers/userController').postAdd);
+app.post('/contact', require('./controllers/contactController').contact);
 
 app.get('/logout', function (req, res) {
     req.logout();

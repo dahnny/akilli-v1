@@ -43,7 +43,7 @@
     <h1>Lesson Title: <%= lesson.title %> </h1>
 <div class="mainbar">
     <% if (lesson.video != undefined) { %>
-        <video class="video-input"  src= "<%= lesson.video %>" width="100%"></video>
+        <video controls class="video-input"  src= "<%= lesson.video %>" width="100%"></video>
     <% } %>
       <div class="editor-border">
         <div id="editor" class="lesson-editor video-input"></div>
@@ -60,11 +60,11 @@
 
           <% } %>
           <% } else { %>
-            <% if (currentNumber == numberOflessons && numberOflessons > 1) { %>
+            <% if (currentNumber == numberOflessons ||currentNumber > 1) { %>
               <a href="/student/<%= classes._id %>/curriculum/<%= parseInt(currentNumber) -1 %>?user=<%= tutor._id %>" class="btn btn-outline-primary">Previous</a>
           <% } %>
   
-          <% if (currentNumber < numberOflessons && numberOflessons > 1) { %>
+          <% if (currentNumber < numberOflessons || currentNumber == 1) { %>
               <a href="/student/<%= classes._id %>/curriculum/<%= parseInt(currentNumber) +1 %>?user=<%= tutor._id %>" class="btn btn-outline-primary next-button">Next</a>
   
             <% } %>

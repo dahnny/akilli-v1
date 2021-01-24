@@ -7,4 +7,6 @@ const lessonSchema = new mongoose.Schema({
     content : String
 });
 
-exports.lessonSchema = lessonSchema;
+const Lesson = new mongoose.model('Lesson', lessonSchema);
+
+module.exports = {Lesson, lessonSchema};

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-const classSchema = require(__dirname + '/classSchema.js').classSchema;
+const {classSchema} = require('./classSchema')
 const enrolledSchema = require(__dirname + '/enrolledSchema.js').enrolledSchema;
-
+const passportLocalMongoose = require('passport-local-mongoose');
 
 
 const userSchema = new mongoose.Schema({
@@ -20,4 +20,7 @@ const userSchema = new mongoose.Schema({
     enrolledClasses: [enrolledSchema],
 });
 
-exports.userSchema = userSchema;
+userSchema.plugin(passportLocalMongoose);
+const User = new mongoose.model('User', userSchema);
+
+module.exports = User;

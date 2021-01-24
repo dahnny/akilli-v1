@@ -43,13 +43,10 @@
                       </button>
                     </a>
                   </div>
-              </div>
-            
-           
+              </div>         
            </nav>
            
     <!-- end of navigation -->
-
 
     <!-- Header -->
     <header id="header" class="header">
@@ -89,7 +86,7 @@
                      <!-- end of img-wrapper -->
                      <div class="copy-link">
                          <h5 style="color: white;">Copy website link</h4>
-                        <input type="text" class="input100" onclick="selectFunction()" style="	padding-left: 20px;" value="localhost:3000/user/<%= user.username %> " id="myInput">
+                        <input type="text" class="input100" onclick="selectFunction()" style="	padding-left: 20px;" value="<%= hostname %>/user/<%= user.username %> " id="myInput">
                         
                     </div>
                     <span><i onclick="selectFunction()" class="far fa-clipboard fa-2x" style="color: white; padding-top: 7px;"></i></span>

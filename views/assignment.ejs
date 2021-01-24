@@ -10,7 +10,8 @@
     <a href="/curriculum">Curriculum</a>
     <a class="active" href="/assignment">Assignments</a>
     <a href="/resources">Class Files</a>
-    <a href="/submitted-assignments?class=<%= classes._id %> ">Submitted Assignments</a>
+    <% if (typeof classes != "undefined" && classes) { %>
+      <a href="/submitted-assignments?class=<%= classes._id %>">Submitted Assignments</a>  <% } %>
 
   </div>
 
