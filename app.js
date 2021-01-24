@@ -556,6 +556,7 @@ app.get('/enroll', async function (req, res) {
 
     let user;
     let studentUser;
+    let hostname = req.headers.host;
     try {
         user = await User.findOne({ username: username });
         let foundClass = user.classes.id(id);
@@ -564,7 +565,7 @@ app.get('/enroll', async function (req, res) {
             if(studentUser.enrolledClasses != null || studentUser.enrolledClasses != []){
                 studentUser.enrolledClasses.forEach(enrolled => {
                     if (enrolled.data.classId == id && studentUser != undefined) {
-                        res.render('student-dashboard', { classes: foundClass, tutor: user, user: req.user });
+                        res.render('student-dashboard', { classes: foundClass, tutor: user, user: req.user, hostname: hostname });
                     } 
                 });
             }
@@ -572,10 +573,10 @@ app.get('/enroll', async function (req, res) {
                 req.flash('error', 'Nice Try! You cannot enroll for your own class');
                 res.redirect(`/user/${user.username}`)
             }else{
-                res.render('enrollment', { user: user, foundClass: foundClass, isAuthenticated: req.isAuthenticated() });
+                res.render('enrollment', { user: user, foundClass: foundClass, isAuthenticated: req.isAuthenticated(), hostname: hostname });
             }
         } else {
-            res.render('enrollment', { user: user, foundClass: foundClass, isAuthenticated: req.isAuthenticated() });
+            res.render('enrollment', { user: user, foundClass: foundClass, isAuthenticated: req.isAuthenticated(), hostname: hostname });
         }
 
     } catch (error) {
