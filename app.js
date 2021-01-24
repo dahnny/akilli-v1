@@ -30,8 +30,8 @@ const upload = require('./helpers/storage').upload;
 
 const app = express();
 
-// mongoose.connect(`mongodb+srv://danny:${process.env.MONGO_PASSWORD}@cluster0.j8grj.mongodb.net/akilliDB?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true });
-mongoose.connect('mongodb://localhost:27017/akilliDB', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(`mongodb+srv://danny:${process.env.MONGO_PASSWORD}@cluster0.j8grj.mongodb.net/akilliDB?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true });
+// mongoose.connect('mongodb://localhost:27017/akilliDB', { useNewUrlParser: true, useUnifiedTopology: true });
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -891,7 +891,7 @@ app.use(function (err, req, res, next) {
     res.status(500);
     res.render('500');
 });
-
-app.listen(3000, function () {
-    console.log('Server started at port 3000');
+const port = process.env.PORT || 3000
+app.listen(port, function () {
+    console.log(`Server started on ${port}`);
 });

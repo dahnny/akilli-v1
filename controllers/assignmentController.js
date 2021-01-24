@@ -1,4 +1,5 @@
-const User = require("../schemas/userSchema")
+const User = require("../schemas/userSchema");
+const { Assignment } = require("../schemas/assignmentSchema");
 
 
 const assignmentController = {

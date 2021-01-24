@@ -5,5 +5,6 @@ const assignmentSchema = new mongoose.Schema({
     type: String,
     answer: [answerSchema]
 });
+const Assignment = new mongoose.model('Assignment', assignmentSchema);
 
-exports.assignmentSchema = assignmentSchema;
+module.exports = {Assignment, assignmentSchema};
