@@ -1,4 +1,4 @@
-
+const nodemailer = require('nodemailer');
 
 const contactController = {
     contact: async (req, res)=>{

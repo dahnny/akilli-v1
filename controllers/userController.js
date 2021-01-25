@@ -1,6 +1,7 @@
 const userSchema = require('../schemas/userSchema').userSchema;
 const mongoose = require('mongoose');
 const passport = require('passport');
+const fs = require('fs');
 
 
 const User = new mongoose.model('User', userSchema);

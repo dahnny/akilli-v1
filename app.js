@@ -646,8 +646,7 @@ app.post('/signup', async function (req, res) {
     var isActive = req.session.isActive = false;
     let user;
     try {
-        user = await User.register({ username: req.body.username }, req.body.password);
-
+        user = await User.register({ username: req.body.username.toLowerCase() }, req.body.password);
     } catch (error) {
         console.log(error);
         req.flash('error', 'Error Occurred');
