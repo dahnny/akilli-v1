@@ -62,7 +62,7 @@
       <p class="lead mt-3 mb-4"><%= classes[index].description %></p>
 
       <div class="card-small">
-        <p>3 Students enrolled</p>
+        
         <p id="startDate<%= classes[index]._id %>">Start Date: </p>
         <p id="endDate<%= classes[index]._id %>">End Date: </p>
         <script>
@@ -78,16 +78,16 @@
       <form action="/class" method="post">
         <input type="hidden" name="id" value="<%= classes[index]._id %>">
         <div class="row">
-          <button type="submit"  class="btn btn-lg btn-outline-primary col-4" style="margin-right: 5px" name="change" value="edit">
+          <button type="submit"  class="btn btn-lg btn-outline-primary col-lg-4 col-sm-12" style="margin-right: 5px" name="change" value="edit">
             <i class="fa fa-edit"></i>
             Edit
           </button>
           <br>
-          <button type="submit"  class="btn btn-lg btn-danger delete-button col-4" style="margin-left:5px" name="change" value="delete">
+          <button type="submit"  class="btn btn-lg btn-danger delete-button col-lg-4 col-sm-6" name="change" value="delete">
             <i class="fa fa-trash"></i>
             Delete
           </button>
-          <a href="/tutor/<%= classes[index]._id %>" style="margin-top: 10px;" class="btn btn-warning col-4">Join Class</a>
+          <a href="/tutor/<%= classes[index]._id %>"  class="btn btn-warning col-lg-4 col-sm-6">Join Class</a>
         </div>
 
        

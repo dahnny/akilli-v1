@@ -621,7 +621,11 @@ app.get('/verify_transaction', async function (req, res) {
                 } else {
                     res.redirect('/signup');
                 }
+            }else{
+                console.log(resp)
             }
+        }else{
+            console.log(err)
         }
     })
 
