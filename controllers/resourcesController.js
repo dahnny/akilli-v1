@@ -5,9 +5,9 @@ const passport = require('passport');
 const passportLocalMongoose = require('passport-local-mongoose')
 const cloudinary = require('../helpers/cloudinaryConfig');
 const User = require('../schemas/userSchema');
+const path = require('path');
+const { File } = require('../schemas/fileSchema');
 
-
-passport.use(User.createStrategy());
 
 const resourcesController = {
     resources: async (req, res)=>{
@@ -23,22 +23,15 @@ const resourcesController = {
                     const foundClassId = req.session.class._id;
                     foundClass = user.classes.id(foundClassId);
                     file = foundClass.files.id(req.body.resourceId);
-                    console.log(file);
+                    result = await cloudinary.uploader.destroy(file.publicId);
+                    console.log(result);
+                    await file.remove();
+                    await user.save();
+                    res.redirect('/resources');
     
                 } catch (error) {
                     console.log(error);
-                }
-                try {
-                    result = await cloudinary.uploader.destroy(file.publicId);
-                    file.remove();
-                    user.save(function (err) {
-                        if (!err) {
-                            res.redirect('/resources');
-                        }
-                    })
-                } catch (error) {
-                    console.log(error);
-                }
+                }               
             }
             if (req.file) {
                 const file = req.file;
@@ -57,6 +50,7 @@ const resourcesController = {
                         const foundClassId = req.session.class._id;
                         foundClass = user.classes.id(foundClassId);
                         result = await cloudinary.uploader.upload(req.file.path, { public_id: file.filename, resource_type: 'raw', overwrite: true });
+                        console.log(result);
                     } catch (error) {
                         console.log(error);
                     }
@@ -74,7 +68,7 @@ const resourcesController = {
     
                 } else {
                     req.flash('error', 'Unsupported Format');
-                    res.redirect('/resources')
+                    res.send({error: 'Image and Video files not supported'})
                 }
     
             } else {

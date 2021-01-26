@@ -5,4 +5,6 @@ const fileSchema = new mongoose.Schema({
     publicId: String
 });
 
-exports.fileSchema = fileSchema;
+const File = new mongoose.model('File', fileSchema);
+
+module.exports = {File, fileSchema}

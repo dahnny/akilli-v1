@@ -21,6 +21,7 @@
       class="dropzone dropzone-form"
       id="my-awesome-dropzone"
     >
+    <p style="color: red;" id="error-text"></p>
       <DIV class="dz-message needsclick">
         Drop files here or click to upload.<BR />
       </DIV>
@@ -64,11 +65,18 @@
       init: function() {
               this.on('success', function( file, resp ){
                   var element = document.getElementById('saveLink');
-                  if (element.style.display === "none") {
+                  console.log(file);
+                  console.log(resp);
+                  if(resp.error == undefined){
+                    if (element.style.display === "none") {
                       element.style.display = "block";
                   } else {
                       element.style.display = "none";
                   }
+                  }else{
+                    let errorText = document.getElementById('error-text');
+                    errorText.innerHTML = resp.error
+                  }               
                 });
               }
     });

@@ -110,7 +110,7 @@
             callback: function(response) {
                 var reference = response.reference;
                 alert('Payment complete! Reference: ' + reference);
-                window.location.replace("<%=hostname%>/verify_transaction?reference=" + response.reference + "&refp=<%=user._id%>");
+                window.location.replace("/verify_transaction?reference=" + response.reference + "&refp=<%=user._id%>");
                 },
         });
         handler.openIframe();

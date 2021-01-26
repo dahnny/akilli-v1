@@ -51,20 +51,8 @@ mongoose.set('useCreateIndex', true);
 
 //schemas
 
-
-
-
-const {assignmentSchema} = require('./schemas/assignmentSchema');
-const userController = require('./controllers/userController');
-const fileSchema = require('./schemas/fileSchema').fileSchema;
 const enrolledSchema = require('./schemas/enrolledSchema').enrolledSchema;
 const answerSchema = require('./schemas/answerSchema').answerSchema;
-
-
-
-
-const Assignment = new mongoose.model("Assignment", assignmentSchema);
-const File = new mongoose.model('File', fileSchema);
 const EnrolledClass = new mongoose.model('EnrolledClass', enrolledSchema);
 const Answer = new mongoose.model('Answer', answerSchema);
 
