@@ -855,7 +855,7 @@ app.post('/student-assignment', async function (req, res) {
 app.post('/user', upload.single('profile-image'),editUser);
 
 
-app.post('/edit-lesson', upload.single('edited-lesson-video'),editLesson)
+app.post('/edit-lesson', upload.single('edited-lesson-video'),editLesson);
 
 app.post('/upload-lesson', upload.single('lesson-video'), uploadLesson);
 

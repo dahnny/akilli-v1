@@ -67,7 +67,6 @@ const resourcesController = {
                     })
     
                 } else {
-                    req.flash('error', 'Unsupported Format');
                     res.send({error: 'Image and Video files not supported'})
                 }
     
