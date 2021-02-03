@@ -7,12 +7,8 @@ const flash = require('express-flash');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
 const request = require('request');
-var http = require('http');
-var url = require('url') ;
+const client = require('./helpers/mailer');
 const mg = require('nodemailer-mailgun-transport');
 
 
@@ -30,8 +26,8 @@ const upload = require('./helpers/storage').upload;
 
 const app = express()
 
-mongoose.connect(`mongodb+srv://danny:${process.env.MONGO_PASSWORD}@cluster0.j8grj.mongodb.net/akilliDB?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true });
-// mongoose.connect('mongodb://localhost:27017/akilliDB', { useNewUrlParser: true, useUnifiedTopology: true });
+// mongoose.connect(`mongodb+srv://danny:${process.env.MONGO_PASSWORD}@cluster0.j8grj.mongodb.net/akilliDB?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb://localhost:27017/akilliDB', { useNewUrlParser: true, useUnifiedTopology: true });
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -635,7 +631,7 @@ app.get('/user/:username', async function (req, res) {
 
 
 app.post('/signup', async function (req, res) {
-    var isActive = req.session.isActive = false;
+    var isActive = req.session.isActive;
     var username = req.body.username;
     let user;
     try {
@@ -650,7 +646,8 @@ app.post('/signup', async function (req, res) {
             res.redirect('/');
         });
     } else {
-        let token = crypto.randomBytes(20);
+        let buf = crypto.randomBytes(20);
+        let token = buf.toString('hex');
         let emailUser = await User.findOne({ username: username.toLowerCase() });
         if (!emailUser) {
             req.flash('error', 'No account with that email address exists.');
@@ -659,120 +656,33 @@ app.post('/signup', async function (req, res) {
         user.email = req.body.email;
         user.emailConfirmationToken = token;
         user.emailConfirmationExpires = Date.now() + 86400000; // 1 hour
-        await user.save();
-        passport.authenticate('local')(req, res, function () {
-            res.redirect('/dashboard');
-        });
 
+        var email = {
+            from: 'danielogbuti@gmail.com',
+            to: req.body.email,
+            subject: 'Confirm your email address',
+            text:
+                'Please click on the following link, or paste this into your browser to confirm your email address:\n\n' +
+                'http://' + req.headers.host + '/confirm/' + token + '\n\n' +
+                'If you did not request this, please ignore this email',
+
+        };
+
+        try {
+            let info = await client.sendMail(email);
+            user.save(function () {
+                req.flash('info', 'An e-mail has been sent to ' + req.body.email + ' with further instructions.');
+                console.log('Message sent: ' + info.response);
+                res.redirect('back');
+            });
+        } catch (error) {
+            console.log(error);
+            req.flash('error', 'Error Occured in sending email');
+            res.redirect('back');
+        }
     }
-    //     var options = {
-    //         host: 'smtp-relay.sendinblue.com',
-    //         port: 587,
-    //         secure: true,
-    //         auth: {
-    //             user: process.env.SENDGRID_USERNAME,
-    //             pass: process.env.SENDGRID_PASSWORD
-    //         }
-    //     }
-    //     var client = nodemailer.createTransport(options);
-
-    //     var email = {
-    //         from: 'danielogbuti@gmail.com',
-    //         to: req.body.email,
-    //         subject: 'Confirm your email address',
-    //         text:
-    //             'Please click on the following link, or paste this into your browser to confirm your email address:\n\n' +
-    //             'http://' + req.headers.host + '/confirm/' + token + '\n\n' +
-    //             'If you did not request this, please ignore this email',
-
-    //     };
-
-    //     try {
-    //         let info = await client.sendMail(email);
-    //         user.save(function () {
-    //             req.flash('info', 'An e-mail has been sent to ' + req.body.email + ' with further instructions.');
-    //             console.log('Message sent: ' + info.response);
-    //             res.redirect('back');
-    //         });
-    //     } catch (error) {
-    //         console.log(err);
-    //         req.flash('error', 'Error Occured in sending email');
-    //         res.redirect('back');
-    //     }
-    // }
 });
-// User.register({ username: req.body.username }, req.body.password, function (err, user) {
-//     if (err) {
-//         console.log(err);
-//         req.flash('error', 'Error Occurred');
-//         res.redirect('/signup');
-//     } else {
-//         if (isActive) {
-//             passport.authenticate('local')(req, res, function () {
-//                 res.redirect('/');
-//             });
-//         } else {
-//             console.log(isActive);
-//             // 
-//             crypto.randomBytes(20, function (err, buf) {
-//                 var token = buf.toString('hex');
-//                 console.log(token);
-//                 User.findOne({ username: req.body.username }, function (err, user) {
-//                     if (!user) {
-//                         req.flash('error', 'No account with that email address exists.');
-//                         res.redirect('/signup');
-//                     }
 
-//                     user.email = req.body.email;
-//                     user.emailConfirmationToken = token;
-//                     user.emailConfirmationExpires = Date.now() + 86400000; // 1 hour
-
-
-//                     var options = {
-//                         host: 'smtp-relay.sendinblue.com',
-//                         port: 587,
-//                         secure: true,
-//                         auth: {
-//                             user: process.env.SENDGRID_USERNAME,
-//                             pass: process.env.SENDGRID_PASSWORD
-//                         }
-//                     }
-
-
-
-//                     var client = nodemailer.createTransport(options);
-
-//                     var email = {
-//                         from: 'danielogbuti@gmail.com',
-//                         to: req.body.email,
-//                         subject: 'Confirm your email address',
-//                         text:
-//                             'Please click on the following link, or paste this into your browser to confirm your email address:\n\n' +
-//                             'http://' + req.headers.host + '/confirm/' + token + '\n\n' +
-//                             'If you did not request this, please ignore this email',
-
-//                     };
-
-//                     client.sendMail(email, function (err, info) {
-
-//                         if (err) {
-//                             console.log(err);
-//                             req.flash('error', 'Error Occured in sending email');
-//                             res.redirect('back');
-//                         }
-//                         else {
-//                             user.save(function () {
-//                                 req.flash('info', 'An e-mail has been sent to ' + req.body.email + ' with further instructions.');
-//                                 console.log('Message sent: ' + info.response);
-//                                 res.redirect('back');
-//                             });
-//                         }
-//                     });
-//                 });
-//             });
-//         }
-//     }
-// });
 app.post('/login', function (req, res) {
     const user = new User({
         username: req.body.username,
@@ -787,13 +697,12 @@ app.post('/login', function (req, res) {
             } else {
                 passport.authenticate('local')(req, res, function () {
                     User.findOne({ username: user.username }, function (err, foundUser) {
-                        res.redirect('/dashboard')
-                        // if (foundUser.active) {
-                        //     res.redirect('/dashboard');
-                        // } else {
-                        //     req.flash('error', 'Please confirm your email address');
-                        //     res.redirect('/login')
-                        // }
+                        if (foundUser.active) {
+                            res.redirect('/dashboard');
+                        } else {
+                            req.flash('error', 'Please confirm your email address');
+                            res.redirect('/login')
+                        }
                     })
 
                 });
