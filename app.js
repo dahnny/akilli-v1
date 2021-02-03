@@ -28,7 +28,7 @@ const {uploadLesson, editLesson} = require('./controllers/lessonController');
 // Local lib
 const upload = require('./helpers/storage').upload;
 
-const app = express();
+const app = express()
 
 mongoose.connect(`mongodb+srv://danny:${process.env.MONGO_PASSWORD}@cluster0.j8grj.mongodb.net/akilliDB?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true });
 // mongoose.connect('mongodb://localhost:27017/akilliDB', { useNewUrlParser: true, useUnifiedTopology: true });
@@ -636,9 +636,10 @@ app.get('/user/:username', async function (req, res) {
 
 app.post('/signup', async function (req, res) {
     var isActive = req.session.isActive = false;
+    var username = req.body.username;
     let user;
     try {
-        user = await User.register({ username: req.body.username.toLowerCase() }, req.body.password);
+        user = await User.register({ username: username.toLowerCase() }, req.body.password);
     } catch (error) {
         console.log(error);
         req.flash('error', 'Error Occurred');
@@ -650,7 +651,7 @@ app.post('/signup', async function (req, res) {
         });
     } else {
         let token = crypto.randomBytes(20);
-        let emailUser = await User.findOne({ username: req.body.username });
+        let emailUser = await User.findOne({ username: username.toLowerCase() });
         if (!emailUser) {
             req.flash('error', 'No account with that email address exists.');
             res.redirect('/signup');
@@ -855,7 +856,7 @@ app.post('/student-assignment', async function (req, res) {
 app.post('/user', upload.single('profile-image'),editUser);
 
 
-app.post('/edit-lesson', upload.single('edited-lesson-video'),editLesson);
+app.post('/edit-lesson', upload.single('edited-lesson-video'),editLesson)
 
 app.post('/upload-lesson', upload.single('lesson-video'), uploadLesson);
 
